@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import mongoose from "mongoose";
+import logger from "../utils/logger";
 
 dotenv.config();
 
@@ -17,5 +18,6 @@ export const connectDB = mongoose
     }
   })
   .catch((err) => {
-    console.log(err);
+    logger.error(err);
+    throw new Error("cannot connect to DB");
   });

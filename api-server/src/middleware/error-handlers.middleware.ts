@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import logger from "../utils/logger";
 
 const errorHandler = (
   err: unknown,
@@ -6,15 +7,17 @@ const errorHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  // If the error is an instance of Error, send the message
   if (err instanceof Error) {
+    logger.error(`Unhandled error at ${req.method} ${req.originalUrl}`, err);
+
     res.status(500).json({ message: err.message });
+  } else {
+    logger.error(`Unknown error at ${req.method} ${req.originalUrl}:`, {
+      error: err,
+    });
 
-    return;
+    res.status(500).json({ message: "Internal Server Error" });
   }
-
-  // If the error is not an instance of Error, send a static message
-  res.status(500).json({ message: "An unexpected error occurred" });
 };
 
 export default errorHandler;

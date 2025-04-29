@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import usersModel from "./users.model";
+import usersModel, { IUser } from "./users.model";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -56,14 +56,17 @@ class UsersController {
     }
 
     const token = jwt.sign(
-      { userId: user._id },
+      { id: user._id.toString(), email: user.email, name: user.name } as IUser,
       process.env.JWT_SECRET as string,
       { expiresIn: "7d" }
     );
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      // secure: process.env.NODE_ENV === "production",
+      sameSite: "lax", // or "none" if using HTTPS
+      secure: false, // true only if using HTTPS
+      maxAge: 24 * 60 * 60 * 1000, // optional expiry
     });
 
     res.status(200).json({ message: "Logged in successfully." });
