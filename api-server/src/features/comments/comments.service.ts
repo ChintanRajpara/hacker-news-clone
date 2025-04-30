@@ -1,4 +1,9 @@
-import CommentsModel, { ICommentWithReplies } from "./comments.model";
+import CommentsModel, {
+  CommentDoc,
+  CommentInfo,
+  CommentWithRepliesDoc,
+  ICommentWithReplies,
+} from "./comments.model";
 import UsersModel from "../users/users.model";
 import { Types } from "mongoose";
 
@@ -29,27 +34,40 @@ class CommentsService {
     return newComment;
   }
 
-  async getTopLevelComments(postId: string, page = 1, limit = 10) {
-    const skip = (page - 1) * limit;
+  async getTopLevelComments(postId: string, limit = 10, cursor?: string) {
+    const query: any = { postId, parentId: null };
+    if (cursor) {
+      query._id = { $lt: new Types.ObjectId(cursor) };
+    }
 
-    const comments = await CommentsModel.find({ postId, parentId: null })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .populate("author", "name") // only fetch user's name
-      .lean<ICommentWithReplies[]>();
+    const comments = (
+      await CommentsModel.find(query)
+        .sort({ _id: -1 })
+        .limit(limit + 1)
+        .populate("author", "name")
+        .lean<ICommentWithReplies[]>()
+    ).map(this.mapCommentResponse);
 
-    return comments;
+    let nextCursor: string | null = null;
+    if (comments.length > limit) {
+      const nextItem = comments[limit];
+      nextCursor = nextItem.id.toString();
+      comments.pop(); // Remove the extra item
+    }
+
+    return { comments, nextCursor };
   }
 
   async getReplies(commentId: string) {
-    const replies = await CommentsModel.find({ parentId: commentId })
-      .sort({ createdAt: 1 })
-      .populate("author", "name")
-      .lean<ICommentWithReplies[]>();
+    const replies = (
+      await CommentsModel.find({ parentId: commentId })
+        .sort({ createdAt: 1 })
+        .populate("author", "name")
+        .lean<ICommentWithReplies[]>()
+    ).map(this.mapCommentResponse);
 
     for (const reply of replies) {
-      reply.replies = await this.getReplies(reply._id.toString());
+      reply["replies"] = await this.getReplies(reply.id.toString());
     }
 
     return replies;
@@ -76,6 +94,24 @@ class CommentsService {
     }
 
     await CommentsModel.deleteOne({ _id: commentId });
+
+    return comment;
+  }
+
+  mapCommentResponse(comment: ICommentWithReplies): CommentInfo {
+    return {
+      author: {
+        id: comment.author._id.toString(),
+        name: comment.author.name,
+      },
+      createdAt: comment.createdAt,
+      parentId: comment.parentId,
+      replies: [],
+      postId: comment.postId,
+      text: comment.text,
+      updatedAt: comment.updatedAt,
+      id: comment._id.toString(),
+    };
   }
 }
 

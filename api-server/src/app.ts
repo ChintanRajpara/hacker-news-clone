@@ -14,8 +14,11 @@ const port = process.env.PORT;
 
 app.use(cors({ origin: process.env.ALLOWED_ORIGIN, credentials: true }));
 app.use(cookieParser());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+// app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.use(requestLogger);
 
 app.use("/api/users", users);

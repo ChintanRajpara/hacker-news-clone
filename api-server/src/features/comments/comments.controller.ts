@@ -1,5 +1,7 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import CommentsService from "./comments.service";
+import { CommentInfo, ICommentWithReplies } from "./comments.model";
+import { Post } from "../posts/posts.model";
 
 class CommentsController {
   private static instance: CommentsController;
@@ -18,78 +20,74 @@ class CommentsController {
     return CommentsController.instance;
   }
 
-  async createComment(req: Request, res: Response, next: NextFunction) {
-    try {
-      if (!req.user) throw new Error("Unauthorized");
+  async createComment(req: Request, res: Response) {
+    if (!req.user) throw new Error("Unauthorized");
 
-      const { postId, text, parentId } = req.body;
-      const comment = await CommentsService.createComment(
-        postId,
-        req.user.id,
-        text,
-        parentId
-      );
+    const { postId, text, parentId } = req.body;
+    const comment = await CommentsService.createComment(
+      postId,
+      req.user.id,
+      text,
+      parentId
+    );
 
-      res.status(201).json({ comment });
-    } catch (error) {
-      next(error);
-    }
+    await Post.findByIdAndUpdate(postId, {
+      $inc: { comments_count: 1 },
+    }).exec();
+
+    res.status(201).json({ comment });
   }
 
-  async getComments(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { postId } = req.params;
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 10;
+  async getComments(req: Request, res: Response) {
+    const { postId } = req.params;
+    const limit = parseInt(req.query.limit as string) || 10;
 
-      const topLevelComments = await CommentsService.getTopLevelComments(
-        postId,
-        page,
-        limit
-      );
+    const cursor = req.query?.cursor as string | undefined;
 
-      const commentsWithReplies = await Promise.all(
-        topLevelComments.map(async (comment) => {
-          comment.replies = await CommentsService.getReplies(
-            comment._id.toString()
-          );
-          return comment;
-        })
-      );
+    const { comments, nextCursor } = await CommentsService.getTopLevelComments(
+      postId,
+      limit,
+      cursor
+    );
 
-      res.status(200).json({ comments: commentsWithReplies });
-    } catch (error) {
-      next(error);
+    const commentsWithReplies: CommentInfo[] = [];
+
+    for (const comment of comments) {
+      comment["replies"] = await CommentsService.getReplies(comment.id);
+      commentsWithReplies.push(comment);
     }
+
+    res
+      .status(200)
+      .json({ comments: commentsWithReplies, pageInfo: { nextCursor } });
   }
 
-  async updateComment(req: Request, res: Response, next: NextFunction) {
-    try {
-      if (!req.user) throw new Error("Unauthorized");
+  async updateComment(req: Request, res: Response) {
+    if (!req.user) throw new Error("Unauthorized");
 
-      const { commentId } = req.params;
-      const { text } = req.body;
+    const { commentId } = req.params;
+    const { text } = req.body;
 
-      await CommentsService.updateComment(commentId, req.user.id, text);
+    await CommentsService.updateComment(commentId, req.user.id, text);
 
-      res.status(200).json({ message: "Comment updated successfully" });
-    } catch (error) {
-      next(error);
-    }
+    res.status(200).json({ message: "Comment updated successfully" });
   }
 
-  async deleteComment(req: Request, res: Response, next: NextFunction) {
-    try {
-      if (!req.user) throw new Error("Unauthorized");
+  async deleteComment(req: Request, res: Response) {
+    if (!req.user) throw new Error("Unauthorized");
 
-      const { commentId } = req.params;
+    const { commentId } = req.params;
 
-      await CommentsService.deleteComment(commentId, req.user.id);
+    const deletedComment = await CommentsService.deleteComment(
+      commentId,
+      req.user.id
+    );
 
-      res.status(200).json({ message: "Comment deleted successfully" });
-    } catch (error) {
-      next(error);
-    }
+    await Post.findByIdAndUpdate(deletedComment.postId, {
+      $inc: { comments_count: -1 },
+    }).exec();
+
+    res.status(200).json({ message: "Comment deleted successfully" });
   }
 }
 

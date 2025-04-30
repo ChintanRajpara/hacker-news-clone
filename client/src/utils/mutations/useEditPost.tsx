@@ -4,8 +4,12 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { GetPostsResponse } from "../../pages/postList";
 import clone from "nanoclone";
+import {
+  GetPostDetailResponse,
+  GetPostsResponse,
+  PostInfo,
+} from "../types/post";
 
 export const useEditPost = (id: string) => {
   const postsQueryKey: QueryKey = ["posts"];
@@ -29,7 +33,7 @@ export const useEditPost = (id: string) => {
         }
       );
 
-      return res.json();
+      return (await res.json()) as { post: PostInfo };
     },
     onMutate: async (postUpdates) => {
       await queryClient.cancelQueries({ queryKey: postsQueryKey });
@@ -86,12 +90,12 @@ export const useEditPost = (id: string) => {
       );
 
       const postDetailQueryPreviousData =
-        queryClient.getQueryData(postDetailQueryKey);
+        queryClient.getQueryData<GetPostDetailResponse>(postDetailQueryKey);
 
       if (postDetailQueryPreviousData) {
-        queryClient.setQueryData(postDetailQueryKey, {
+        queryClient.setQueryData<GetPostDetailResponse>(postDetailQueryKey, {
           ...postDetailQueryPreviousData,
-          postUpdates,
+          ...postUpdates,
         });
       }
 
@@ -106,7 +110,7 @@ export const useEditPost = (id: string) => {
       }
 
       if (context?.postDetailQueryPreviousData) {
-        queryClient.setQueryData(
+        queryClient.setQueryData<GetPostDetailResponse>(
           postDetailQueryKey,
           context.postDetailQueryPreviousData
         );

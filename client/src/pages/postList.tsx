@@ -4,22 +4,7 @@ import { UIDialog } from "../components/dialog";
 import { CreatePostModal } from "./createPost";
 import { useDebounce } from "../utils/hooks/useDebounce";
 import { usePostList } from "../utils/queries/usePostList";
-
-export type PostInfo = {
-  author: string;
-  comments_count: number;
-  createdAt: string;
-  text?: string;
-  title: string;
-  url?: string;
-  votes: number;
-  id: string;
-};
-
-export type GetPostsResponse = {
-  posts: PostInfo[];
-  pageInfo: { nextCursor?: string };
-};
+import { PostInfo } from "../utils/types/post";
 
 const PostInfoContainer = ({ post }: { post: PostInfo }) => {
   const { mutate } = useEditPost(post.id);
@@ -32,8 +17,10 @@ const PostInfoContainer = ({ post }: { post: PostInfo }) => {
       <p>text: {post.text}</p>
       <p>comments_count: {post.comments_count}</p>
       <p>votes: {post.votes}</p>
-      <p>author: {post.author}</p>
-      <p>createdAt: {post.createdAt}</p>
+      <p>
+        author: {post.author.id}- {post.author.name}
+      </p>
+      <p>createdAt: {post.createdAt.toString()}</p>
 
       <button
         onClick={() => {

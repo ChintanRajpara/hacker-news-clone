@@ -13,5 +13,6 @@ router.get("/:id", postController.getById); // Get post by ID
 router.post("/", authMiddleware, postController.create); // Create post
 router.put("/:id", authMiddleware, postController.update); // Update post
 router.delete("/:id", authMiddleware, postController.delete); // Delete post
+router.put("/:id/vote", authMiddleware, postController.vote);
 
 export default router;

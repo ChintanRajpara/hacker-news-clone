@@ -1,10 +1,12 @@
-import { Schema, model, Types } from "mongoose";
+import { Schema, model, Types, Document } from "mongoose";
 
 interface IComment {
   postId: Types.ObjectId;
   parentId?: Types.ObjectId | null;
   author: Types.ObjectId;
   text: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface ICommentWithReplies extends Omit<IComment, "author"> {
@@ -15,6 +17,39 @@ export interface ICommentWithReplies extends Omit<IComment, "author"> {
   };
   replies?: ICommentWithReplies[];
 }
+
+export type CommentDoc = Document<unknown, {}, IComment, {}> &
+  IComment & {
+    _id: Types.ObjectId;
+  } & {
+    __v: number;
+  };
+
+export type CommentWithRepliesDoc = Document<
+  unknown,
+  {},
+  ICommentWithReplies,
+  {}
+> &
+  ICommentWithReplies & {
+    _id: Types.ObjectId;
+  } & {
+    __v: number;
+  };
+
+export type CommentInfo = {
+  author: {
+    id: string;
+    name: string;
+  };
+  createdAt: Date;
+  parentId: Types.ObjectId | null | undefined;
+  replies: CommentInfo[];
+  postId: Types.ObjectId;
+  text: string;
+  updatedAt: Date;
+  id: string;
+};
 
 const commentSchema = new Schema<IComment>(
   {

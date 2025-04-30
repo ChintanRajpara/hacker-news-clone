@@ -1,37 +1,29 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { GetCommentsResponse } from "../types/comments";
 import { useMemo } from "react";
-import { GetPostsResponse } from "../types/post";
 
-export const usePostList = ({
-  search,
-  sort,
-}: {
-  sort: string;
-  search: string;
-}) => {
+export const useComments = (postId: string) => {
   const { data, fetchNextPage, hasNextPage, isPending, refetch } =
     useInfiniteQuery({
       networkMode: "always",
-      queryKey: ["posts"],
+      queryKey: ["comments"],
       queryFn: async ({ pageParam }) => {
         const url = `${
           import.meta.env.VITE_API_SERVER_ENDPOINT
-        }/api/posts?search=${search}&sort=${sort}&limit=10&cursor=${
-          pageParam ?? ""
-        }`;
+        }/api/comments/${postId}?&limit=10&cursor=${pageParam ?? ""}`;
 
         const res = await fetch(url, { credentials: "include" });
 
-        return (await res.json()) as GetPostsResponse;
+        return (await res.json()) as GetCommentsResponse;
       },
       initialPageParam: undefined as undefined | string,
       getNextPageParam: (lastPage) => lastPage.pageInfo.nextCursor,
     });
 
-  const posts = useMemo(
-    () => data?.pages.flatMap((page) => page.posts),
+  const comments = useMemo(
+    () => data?.pages.flatMap((page) => page.comments),
     [data?.pages]
   );
 
-  return { posts, fetchNextPage, hasNextPage, isPending, refetch };
+  return { comments, fetchNextPage, hasNextPage, isPending, refetch };
 };

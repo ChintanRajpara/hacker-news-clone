@@ -1,11 +1,11 @@
 // src/features/posts/posts.model.ts
-import { Document, Schema, Types, model } from "mongoose";
+import mongoose, { Document, Schema, Types, model } from "mongoose";
 
 export interface IPost {
   title: string;
   url: string | null;
   text: string | null;
-  author: string;
+  author: Types.ObjectId;
   votes: number;
   comments_count: number;
   keywords: string[];
@@ -13,19 +13,28 @@ export interface IPost {
   updatedAt: Date;
 }
 
-export type PostDoc = Document<unknown, {}, IPost, {}> &
+export type PostDoc = mongoose.Document<unknown, {}, IPost, {}> &
   IPost & {
-    _id: Types.ObjectId;
+    _id: mongoose.Types.ObjectId;
   } & {
     __v: number;
   };
+
+export interface IPostWithAuthor extends Omit<IPost, "author"> {
+  _id: Types.ObjectId;
+  author: {
+    _id: Types.ObjectId;
+    name: string;
+  };
+  replies?: IPostWithAuthor[];
+}
 
 const postSchema = new Schema<IPost>(
   {
     title: { type: String, required: true },
     url: { type: String, required: false, default: null },
     text: { type: String, required: false, default: null },
-    author: { type: String, required: true },
+    author: { type: Schema.Types.ObjectId, required: true, ref: "Users" },
     votes: { type: Number, default: 0 }, // Total number of votes
     comments_count: { type: Number, required: true, default: 0 },
     keywords: { type: [String], index: true },

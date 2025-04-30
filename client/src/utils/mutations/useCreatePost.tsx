@@ -4,8 +4,8 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { GetPostsResponse, PostInfo } from "../../pages/postList";
 import { nanoid } from "nanoid";
+import { GetPostsResponse, PostInfo } from "../types/post";
 
 export const useCreatePost = () => {
   const postsQueryKey: QueryKey = ["posts"];
@@ -39,9 +39,9 @@ export const useCreatePost = () => {
         ...newPost,
         id: mutationId,
         comments_count: 0,
-        createdAt: new Date().toISOString(),
+        createdAt: new Date(),
         votes: 0,
-        author: "", // TODO:
+        author: { id: "", name: "" }, // TODO:
       };
 
       const postsQueryPreviousData =

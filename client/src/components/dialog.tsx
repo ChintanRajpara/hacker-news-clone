@@ -83,10 +83,6 @@ export const UIDialog = ({
     }, transitionDurationInMS);
   }, [open]);
 
-  // TODO:
-  // if we can make sure that "body" will always be an non-null HTMLBodyElement,
-  // then we can compeletely remove "<dialog />" and "dialogRef"
-
   return transitionOpen || open ? (
     createPortal(childrenWithBackdrop, document.body)
   ) : (

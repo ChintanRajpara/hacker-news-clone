@@ -13,8 +13,6 @@ export const CreatePostModal = () => {
       <h3>CreatePost</h3>
       <form
         onSubmit={(e) => {
-          console.log("mutate");
-
           e.preventDefault();
 
           mutate({ title, url, text });

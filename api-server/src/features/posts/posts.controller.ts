@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { IPost, Post } from "./posts.model";
+import { IPost, IPostWithAuthor, Post } from "./posts.model";
 import PostVote from "./userPostVote.model";
 import { postService } from "./posts.service";
 import { extractPostKeywords } from "../../utils/extractKeywords";
@@ -49,10 +49,18 @@ class PostController {
     const post = new Post(newPost);
     await post.save();
 
-    res.status(201).json({
-      post: postService.mapPostResponse(post),
-      message: "Post created successfully!",
-    });
+    const savedPost = await Post.findById(post.id)
+      .populate("author", "name")
+      .lean<IPostWithAuthor>();
+
+    if (savedPost) {
+      res.status(201).json({
+        post: postService.mapPostResponse(savedPost),
+        message: "Post created successfully!",
+      });
+    } else {
+      throw new Error("unable to create post");
+    }
   }
 
   async getAll(req: Request, res: Response): Promise<void> {
@@ -93,7 +101,8 @@ class PostController {
     const posts = await Post.find(filter)
       .sort(sortOptions)
       .limit(limit + 1)
-      .exec();
+      .populate("author", "name")
+      .lean<IPostWithAuthor[]>();
 
     // Set next cursor if there are more posts
     let nextCursor: string | null = null;
@@ -113,7 +122,9 @@ class PostController {
   async getById(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
 
-    const post = await Post.findOne({ _id: id }).exec();
+    const post = await Post.findOne({ _id: id })
+      .populate("author", "name")
+      .lean<IPostWithAuthor>();
 
     if (!post) {
       res.status(404).json({ message: "Post not found" });
@@ -134,13 +145,15 @@ class PostController {
     const { id } = req.params;
     const postData = req.body;
 
-    const post = await Post.findById(id);
+    const post = await Post.findById(id)
+      .populate("author", "name")
+      .lean<IPostWithAuthor>();
     if (!post) {
       throw new Error("Post not found");
     }
 
     // Check if the user is the author of the post
-    if (post.author.toString() !== req.user.id) {
+    if (post.author._id.toString() !== req.user.id) {
       throw new Error("You are not authorized to edit this post");
     }
 
@@ -149,7 +162,14 @@ class PostController {
     post.url = postData.url || post.url;
     post.text = postData.text || post.text;
 
-    await post.save();
+    await Post.updateOne(
+      { _id: id },
+      {
+        title: post.title,
+        url: post.url,
+        text: post.text,
+      }
+    );
 
     if (!post) {
       res.status(404).json({ message: "Post not found" });
@@ -193,25 +213,28 @@ class PostController {
       return;
     }
 
-    const { postId } = req.params; // Get postId from URL
+    const { id } = req.params; // Get postId from URL
     const userId = req.user.id; // Get userId from the authenticated user
     const { voteValue } = req.body; // The vote value (+1 or -1 or 0 to remove)
 
     // Check if the post exists
-    const post = await Post.findById(postId);
+    const post = await Post.findById(id)
+      .populate("author", "name")
+      .lean<IPostWithAuthor>();
     if (!post) {
       throw new Error("Post not found");
     }
 
     // Check if the user has already voted
-    const existingVote = await PostVote.findOne({ userId, postId });
+    const existingVote = await PostVote.findOne({ userId, postId: id });
 
     // If the user has already voted
     if (existingVote) {
       if (voteValue === 0) {
         // If vote value is 0, remove the vote
         post.votes -= existingVote.voteValue; // Remove the old vote value
-        await post.save(); // Save the updated post
+
+        await Post.updateOne({ _id: post._id }, { votes: post.votes }); // Save the updated post
 
         // Remove the user's vote from the PostVote collection
         await PostVote.deleteOne({ _id: existingVote._id });
@@ -238,7 +261,9 @@ class PostController {
 
       post.votes -= existingVote.voteValue; // Remove the old vote value
       post.votes += voteValue; // Add the new vote value
-      await post.save(); // Save the updated post
+      // await post.save(); // Save the updated post
+
+      await Post.updateOne({ _id: post._id }, { votes: post.votes }); // Save the updated post
 
       // Update the user's vote record with the new vote value
       existingVote.voteValue = voteValue;
@@ -253,11 +278,13 @@ class PostController {
     }
 
     // If the user hasn't voted yet, add the new vote
-    const newVote = new PostVote({ userId, postId, voteValue });
+    const newVote = new PostVote({ userId, postId: id, voteValue });
     await newVote.save(); // Save the vote
 
     post.votes += voteValue; // Increment or decrement the vote count
-    await post.save(); // Save the updated post
+
+    // await post.save(); // Save the updated post
+    await Post.updateOne({ _id: post._id }, { votes: post.votes }); // Save the updated post
 
     res.status(200).json({
       post: postService.mapPostResponse(post),
