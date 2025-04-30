@@ -1,8 +1,9 @@
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useEditPost } from "../utils/mutations/useEditPost";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { UIDialog } from "../components/dialog";
 import { CreatePostModal } from "./createPost";
+import { useDebounce } from "../utils/hooks/useDebounce";
+import { usePostList } from "../utils/queries/usePostList";
 
 export type PostInfo = {
   author: string;
@@ -17,17 +18,14 @@ export type PostInfo = {
 
 export type GetPostsResponse = {
   posts: PostInfo[];
-  pageInfo: {
-    totalPages: number;
-    totalPosts: number;
-  };
+  pageInfo: { nextCursor?: string };
 };
 
 const PostInfoContainer = ({ post }: { post: PostInfo }) => {
   const { mutate } = useEditPost(post.id);
 
   return (
-    <div className="border border-blue-300">
+    <div className="border-b">
       <p>id: {post.id}</p>
       <p>title: {post.title}</p>
       <p>url: {post.url}</p>
@@ -39,7 +37,7 @@ const PostInfoContainer = ({ post }: { post: PostInfo }) => {
 
       <button
         onClick={() => {
-          mutate({ text: "new-eraff" });
+          mutate({ text: `new-eraff-${Math.random() * 10000}` });
         }}
       >
         Edit Post
@@ -49,28 +47,24 @@ const PostInfoContainer = ({ post }: { post: PostInfo }) => {
 };
 
 export const PostList = () => {
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
+
   const [createPostModalOpen, setCreatePostModalOpen] = useState(false);
+  const [sort, setSort] = useState<"new" | "top" | "best">("new");
 
-  //   limit
-  // cursor
-  // sort
-  // search
+  const searchRef = useRef(search);
+  useEffect(() => {
+    searchRef.current = search;
+  }, [search]);
 
-  // // TODO:
-  // useInfiniteQuery({
-  //   queryKey: ["posts"],
-  // })
+  const { fetchNextPage, hasNextPage, isPending, posts, refetch } = usePostList(
+    { search: debouncedSearch, sort }
+  );
 
-  const { data, isPending } = useQuery({
-    queryKey: ["posts"],
-    queryFn: async () => {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_SERVER_ENDPOINT}/api/posts`,
-        { credentials: "include" }
-      );
-      return (await res.json()) as GetPostsResponse;
-    },
-  });
+  useEffect(() => {
+    refetch();
+  }, [refetch, sort, debouncedSearch]);
 
   return (
     <div>
@@ -83,13 +77,53 @@ export const PostList = () => {
           Create Post
         </button>
       </div>
+
+      <div>
+        <input
+          placeholder="search.."
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+          }}
+        />
+
+        <button onClick={() => setSearch("")} disabled={!search}>
+          clear search
+        </button>
+
+        <select
+          value={sort}
+          onChange={(e) => {
+            setSort(e.target.value as typeof sort);
+          }}
+        >
+          <option value="new">new</option>
+          <option value="top">top</option>
+          <option value="best">best</option>
+        </select>
+      </div>
+
+      <hr />
+
       {isPending ? (
         <p>loading...</p>
-      ) : data?.posts?.length ? (
+      ) : posts?.length ? (
         <div>
-          {data.posts.map((post) => (
+          {posts.map((post) => (
             <PostInfoContainer post={post} key={post.id} />
           ))}
+
+          {hasNextPage ? (
+            <div
+              onClick={() => {
+                fetchNextPage();
+              }}
+            >
+              <button>load more posts</button>
+            </div>
+          ) : (
+            <></>
+          )}
         </div>
       ) : (
         <div>no data found</div>

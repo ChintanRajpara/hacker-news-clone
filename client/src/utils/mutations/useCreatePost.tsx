@@ -1,4 +1,9 @@
-import { QueryKey, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  InfiniteData,
+  QueryKey,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { GetPostsResponse, PostInfo } from "../../pages/postList";
 import { nanoid } from "nanoid";
 
@@ -13,7 +18,6 @@ export const useCreatePost = () => {
       url?: string;
       text?: string;
     }) => {
-      await new Promise((r) => setTimeout(r, 2000));
       const res = await fetch(
         `${import.meta.env.VITE_API_SERVER_ENDPOINT}/api/posts`,
         {
@@ -24,62 +28,84 @@ export const useCreatePost = () => {
         }
       );
 
-      return res.json();
+      return (await res.json()) as { post: PostInfo };
     },
     onMutate: async (newPost) => {
       const mutationId = `clientMutationId:${nanoid()}`;
 
       await queryClient.cancelQueries({ queryKey: postsQueryKey });
 
+      const optimisticPost: PostInfo = {
+        ...newPost,
+        id: mutationId,
+        comments_count: 0,
+        createdAt: new Date().toISOString(),
+        votes: 0,
+        author: "", // TODO:
+      };
+
       const postsQueryPreviousData =
-        queryClient.getQueryData<GetPostsResponse>(postsQueryKey);
+        queryClient.getQueryData<InfiniteData<GetPostsResponse>>(postsQueryKey);
 
-      if (postsQueryPreviousData) {
-        const posts: PostInfo[] = [
-          {
-            ...newPost,
-            id: mutationId,
-            comments_count: 0,
-            createdAt: new Date().getTime().toString(),
-            votes: 0,
-            author: "", // TODO:
-          },
-          ...postsQueryPreviousData.posts,
-        ];
+      // Update the cache with our optimistic comment
+      queryClient.setQueryData<InfiniteData<GetPostsResponse>>(
+        postsQueryKey,
+        (oldData) => {
+          const firstPage = oldData?.pages[0];
 
-        queryClient.setQueryData(postsQueryKey, {
-          ...postsQueryPreviousData,
-          posts,
-        });
-      }
+          if (firstPage) {
+            return {
+              ...oldData,
+              pages: [
+                {
+                  ...firstPage,
+                  posts: [optimisticPost, ...firstPage.posts],
+                },
+                ...oldData.pages.slice(1),
+              ],
+            };
+          }
+
+          return oldData;
+        }
+      );
 
       return { postsQueryPreviousData, mutationId };
     },
     onError: (_, __, context) => {
       if (context?.postsQueryPreviousData) {
-        queryClient.setQueryData(postsQueryKey, context.postsQueryPreviousData);
+        queryClient.setQueryData<InfiniteData<GetPostsResponse>>(
+          postsQueryKey,
+          context.postsQueryPreviousData
+        );
       }
     },
     onSuccess(data, _, context) {
-      const postsQueryPreviousData =
-        queryClient.getQueryData<GetPostsResponse>(postsQueryKey);
+      queryClient.setQueryData<InfiniteData<GetPostsResponse>>(
+        postsQueryKey,
+        (oldData) => {
+          const firstPage = oldData?.pages[0];
 
-      if (postsQueryPreviousData) {
-        const index = postsQueryPreviousData?.posts.findIndex(
-          ({ id }) => id === context.mutationId
-        );
+          if (firstPage) {
+            const index = firstPage.posts.findIndex(
+              ({ id }) => id === context.mutationId
+            );
 
-        if (typeof index === "number" && index > -1) {
-          const posts = [...postsQueryPreviousData.posts];
+            if (typeof index === "number" && index > -1) {
+              const posts = [...firstPage.posts];
 
-          posts[index] = data.post;
+              posts[index] = data.post;
 
-          queryClient.setQueryData(postsQueryKey, {
-            ...postsQueryPreviousData,
-            posts,
-          });
+              return {
+                ...oldData,
+                pages: [{ ...firstPage, posts }, ...oldData.pages.slice(1)],
+              };
+            }
+          }
+
+          return oldData;
         }
-      }
+      );
     },
   });
 };
