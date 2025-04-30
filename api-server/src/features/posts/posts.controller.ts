@@ -54,8 +54,10 @@ class PostController {
       .lean<IPostWithAuthor>();
 
     if (savedPost) {
+      const mappedPost = await postService.mapPostResponse(savedPost);
+
       res.status(201).json({
-        post: postService.mapPostResponse(savedPost),
+        post: mappedPost,
         message: "Post created successfully!",
       });
     } else {
@@ -112,8 +114,10 @@ class PostController {
       posts.pop(); // Remove the extra item
     }
 
+    const mappedPosts = await postService.mapPostsResponse(posts);
+
     res.json({
-      posts: posts.map(postService.mapPostResponse),
+      posts: mappedPosts,
       pageInfo: { nextCursor },
     });
   }
@@ -129,9 +133,9 @@ class PostController {
     if (!post) {
       res.status(404).json({ message: "Post not found" });
     } else {
-      res.json({
-        post: postService.mapPostResponse(post),
-      });
+      const mappedPost = await postService.mapPostResponse(post);
+
+      res.json({ post: mappedPost });
     }
   }
 
@@ -174,10 +178,9 @@ class PostController {
     if (!post) {
       res.status(404).json({ message: "Post not found" });
     } else {
-      res.json({
-        post: postService.mapPostResponse(post),
-        message: "Post updated successfully",
-      });
+      const mappedPost = await postService.mapPostResponse(post);
+
+      res.json({ post: mappedPost, message: "Post updated successfully" });
     }
   }
 
@@ -239,10 +242,11 @@ class PostController {
         // Remove the user's vote from the PostVote collection
         await PostVote.deleteOne({ _id: existingVote._id });
 
-        res.status(200).json({
-          post: postService.mapPostResponse(post),
-          message: "Vote removed successfully",
-        });
+        const mappedPost = await postService.mapPostResponse(post);
+
+        res
+          .status(200)
+          .json({ post: mappedPost, message: "Vote removed successfully" });
 
         return;
       }
@@ -251,10 +255,11 @@ class PostController {
       if (existingVote.voteValue === voteValue) {
         // If the vote value is the same, don't update anything
 
-        res.status(200).json({
-          post: postService.mapPostResponse(post),
-          message: "Vote is already the same",
-        });
+        const mappedPost = await postService.mapPostResponse(post);
+
+        res
+          .status(200)
+          .json({ post: mappedPost, message: "Vote is already the same" });
 
         return;
       }
@@ -269,10 +274,11 @@ class PostController {
       existingVote.voteValue = voteValue;
       await existingVote.save();
 
-      res.status(200).json({
-        post: postService.mapPostResponse(post),
-        message: "Vote added successfully",
-      });
+      const mappedPost = await postService.mapPostResponse(post);
+
+      res
+        .status(200)
+        .json({ post: mappedPost, message: "Vote added successfully" });
 
       return;
     }
@@ -286,10 +292,11 @@ class PostController {
     // await post.save(); // Save the updated post
     await Post.updateOne({ _id: post._id }, { votes: post.votes }); // Save the updated post
 
-    res.status(200).json({
-      post: postService.mapPostResponse(post),
-      message: "Vote added successfully",
-    });
+    const mappedPost = await postService.mapPostResponse(post);
+
+    res
+      .status(200)
+      .json({ post: mappedPost, message: "Vote added successfully" });
 
     return;
   }

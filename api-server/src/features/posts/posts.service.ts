@@ -1,4 +1,5 @@
 import { IPostWithAuthor } from "./posts.model";
+import PostVote from "./userPostVote.model";
 
 export type PostInfo = {
   author: {
@@ -12,6 +13,7 @@ export type PostInfo = {
   url?: string | null;
   votes: number;
   id: string;
+  selfVoteValue?: number;
 };
 
 class PostService {
@@ -19,6 +21,7 @@ class PostService {
 
   private constructor() {
     this.mapPostResponse = this.mapPostResponse.bind(this);
+    this.mapPostsResponse = this.mapPostsResponse.bind(this);
   }
 
   public static getInstance(): PostService {
@@ -28,7 +31,15 @@ class PostService {
     return PostService.instance;
   }
 
-  mapPostResponse(post: IPostWithAuthor): PostInfo {
+  async mapPostResponse(
+    post: IPostWithAuthor,
+    authUserId?: string
+  ): Promise<PostInfo> {
+    const selfVote = await PostVote.findOne({
+      postId: post._id,
+      userId: authUserId,
+    });
+
     return {
       author: {
         id: post.author._id.toString(),
@@ -41,7 +52,23 @@ class PostService {
       url: post.url,
       votes: post.votes,
       id: post._id.toString(),
+      selfVoteValue: selfVote?.voteValue ?? 0,
     };
+  }
+
+  async mapPostsResponse(
+    posts: IPostWithAuthor[],
+    authUserId?: string
+  ): Promise<PostInfo[]> {
+    const res: PostInfo[] = [];
+
+    for (const post of posts) {
+      const mappedPost = await this.mapPostResponse(post, authUserId);
+
+      res.push(mappedPost);
+    }
+
+    return res;
   }
 }
 
