@@ -25,45 +25,54 @@ const PostInfoContainer = ({ post }: { post: PostInfo }) => {
       <p>selfVoteValue: {post.selfVoteValue}</p>
       <p>createdAt: {post.createdAt.toString()}</p>
 
-      <button
-        onClick={() => {
-          const selfVoteValue = (post.selfVoteValue === 1 ? 0 : 1) as voteValue;
+      <div className="flex gap-2">
+        <button className="btn">Delete Post</button>
 
-          const newVotes = post.votes + (selfVoteValue === 1 ? 1 : -1);
+        <button
+          className="btn"
+          onClick={() => {
+            const selfVoteValue = (
+              post.selfVoteValue === 1 ? 0 : 1
+            ) as voteValue;
 
-          votePostMutate({
-            selfVoteValue,
-            votes: newVotes,
-          });
-        }}
-      >
-        {post.selfVoteValue === 1 ? "Unvote" : "Upvote"}
-      </button>
+            const newVotes = post.votes + (selfVoteValue === 1 ? 1 : -1);
 
-      <button
-        onClick={() => {
-          const selfVoteValue = (
-            post.selfVoteValue === -1 ? 0 : -1
-          ) as voteValue;
+            votePostMutate({
+              selfVoteValue,
+              votes: newVotes,
+            });
+          }}
+        >
+          {post.selfVoteValue === 1 ? "Unvote" : "Upvote"}
+        </button>
 
-          const newVotes = post.votes + (selfVoteValue === -1 ? -1 : 1);
+        <button
+          className="btn"
+          onClick={() => {
+            const selfVoteValue = (
+              post.selfVoteValue === -1 ? 0 : -1
+            ) as voteValue;
 
-          votePostMutate({
-            selfVoteValue,
-            votes: newVotes,
-          });
-        }}
-      >
-        {post.selfVoteValue === -1 ? "Unvote" : "downvote"}
-      </button>
+            const newVotes = post.votes + (selfVoteValue === -1 ? -1 : 1);
 
-      <button
-        onClick={() => {
-          editPostMutate({ text: `new-eraff-${Math.random() * 10000}` });
-        }}
-      >
-        Edit Post
-      </button>
+            votePostMutate({
+              selfVoteValue,
+              votes: newVotes,
+            });
+          }}
+        >
+          {post.selfVoteValue === -1 ? "Unvote" : "downvote"}
+        </button>
+
+        <button
+          className="btn"
+          onClick={() => {
+            editPostMutate({ text: `new-eraff-${Math.random() * 10000}` });
+          }}
+        >
+          Edit Post
+        </button>
+      </div>
     </div>
   );
 };

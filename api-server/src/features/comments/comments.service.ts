@@ -93,9 +93,23 @@ class CommentsService {
       throw new Error("Unauthorized to delete this comment");
     }
 
-    await CommentsModel.deleteOne({ _id: commentId });
+    // Delete comment and all its nested replies
+    await this.deleteCommentAndReplies(commentId);
 
     return comment;
+  }
+
+  private async deleteCommentAndReplies(commentId: string) {
+    // Delete the target comment
+    await CommentsModel.deleteOne({ _id: commentId });
+
+    // Find child comments
+    const childComments = await CommentsModel.find({ parentId: commentId });
+
+    for (const child of childComments) {
+      // Recursively delete each child
+      await this.deleteCommentAndReplies(child._id.toString());
+    }
   }
 
   mapCommentResponse(comment: ICommentWithReplies): CommentInfo {

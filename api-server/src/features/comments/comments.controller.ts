@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import CommentsService from "./comments.service";
-import { CommentInfo, ICommentWithReplies } from "./comments.model";
+import commentsModel, {
+  CommentInfo,
+  ICommentWithReplies,
+} from "./comments.model";
 import { Post } from "../posts/posts.model";
 
 class CommentsController {
@@ -35,7 +38,18 @@ class CommentsController {
       $inc: { comments_count: 1 },
     }).exec();
 
-    res.status(201).json({ comment });
+    const savedComment = await commentsModel
+      .findById(comment.id)
+      .populate("author", "name")
+      .lean<ICommentWithReplies>();
+
+    if (savedComment) {
+      res
+        .status(201)
+        .json({ comment: CommentsService.mapCommentResponse(savedComment) });
+    } else {
+      throw new Error("unable to add comment");
+    }
   }
 
   async getComments(req: Request, res: Response) {

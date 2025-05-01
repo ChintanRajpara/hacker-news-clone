@@ -31,17 +31,18 @@ export const useCreatePost = () => {
       return (await res.json()) as { post: PostInfo };
     },
     onMutate: async (newPost) => {
-      const mutationId = `clientMutationId:${nanoid()}`;
+      const clientMutationId = `clientMutationId:${nanoid()}`;
 
       await queryClient.cancelQueries({ queryKey: postsQueryKey });
 
       const optimisticPost: PostInfo = {
         ...newPost,
-        id: mutationId,
+        id: clientMutationId,
         comments_count: 0,
         createdAt: new Date(),
         votes: 0,
         author: { id: "", name: "" }, // TODO:
+        selfVoteValue: 0,
       };
 
       const postsQueryPreviousData =
@@ -70,7 +71,7 @@ export const useCreatePost = () => {
         }
       );
 
-      return { postsQueryPreviousData, mutationId };
+      return { postsQueryPreviousData, clientMutationId };
     },
     onError: (_, __, context) => {
       if (context?.postsQueryPreviousData) {
@@ -88,7 +89,7 @@ export const useCreatePost = () => {
 
           if (firstPage) {
             const index = firstPage.posts.findIndex(
-              ({ id }) => id === context.mutationId
+              ({ id }) => id === context.clientMutationId
             );
 
             if (typeof index === "number" && index > -1) {

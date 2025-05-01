@@ -1,17 +1,31 @@
 import { usePostDetail } from "../utils/queries/usePostDetail";
-import { useCreateComment } from "../utils/mutations/useCreateComment";
+import { useAddComment } from "../utils/mutations/useAddComment";
 import { useComments } from "../utils/queries/useComments";
 import { CommentInfo } from "../utils/types/comments";
 import { useParams } from "react-router-dom";
 import { useEditComment } from "../utils/mutations/useEditComment";
 import { useDeleteComment } from "../utils/mutations/useDeleteComment";
 
-const PostItem = ({ comment }: { comment: CommentInfo }) => {
-  const { mutate } = useCreateComment();
+const PostItem = ({
+  comment,
+  topLevelParentId,
+}: {
+  comment: CommentInfo;
+  topLevelParentId: string;
+}) => {
+  const { mutate } = useAddComment();
 
-  const { mutate: editMutate } = useEditComment(comment.id);
+  const { mutate: editMutate } = useEditComment(
+    comment.id,
+    topLevelParentId,
+    comment.postId
+  );
 
-  const { mutate: deleteMutate } = useDeleteComment(comment.id);
+  const { mutate: deleteMutate } = useDeleteComment(
+    comment.id,
+    topLevelParentId,
+    comment.postId
+  );
 
   return (
     <div>
@@ -20,9 +34,12 @@ const PostItem = ({ comment }: { comment: CommentInfo }) => {
         <button
           onClick={() => {
             mutate({
-              postId: comment.postId,
-              text: "hello world",
-              parentId: comment.id,
+              newComment: {
+                postId: comment.postId,
+                text: "hello world",
+                parentId: comment.id,
+              },
+              topLevelParentId,
             });
           }}
         >
@@ -39,7 +56,7 @@ const PostItem = ({ comment }: { comment: CommentInfo }) => {
 
         <button
           onClick={() => {
-            editMutate({ text: "edited" });
+            editMutate({ text: `edited-${Math.random() * 10000}` });
           }}
         >
           Edit
@@ -47,7 +64,12 @@ const PostItem = ({ comment }: { comment: CommentInfo }) => {
       </div>
       <div className="pl-10 flex flex-col">
         {comment.replies.map((reply) => {
-          return <PostItem key={reply.id} {...{ comment: reply }} />;
+          return (
+            <PostItem
+              key={reply.id}
+              {...{ comment: reply, topLevelParentId }}
+            />
+          );
         })}
       </div>
     </div>
@@ -57,20 +79,30 @@ const PostItem = ({ comment }: { comment: CommentInfo }) => {
 const PostComments = ({ id }: { id: string }) => {
   const { comments } = useComments(id);
 
-  const { mutate } = useCreateComment();
+  const { mutate } = useAddComment();
 
   return (
     <div>
       <div>
         {comments?.map((comment) => {
-          return <PostItem key={comment.id} {...{ comment }} />;
+          return (
+            <PostItem
+              key={comment.id}
+              {...{ comment, topLevelParentId: comment.id }}
+            />
+          );
         })}
       </div>
 
       <div>
         <button
           onClick={() => {
-            mutate({ postId: id, text: "hello world" });
+            mutate({
+              newComment: {
+                postId: id,
+                text: `hello world-${Math.random() * 10000}`,
+              },
+            });
           }}
         >
           Comment

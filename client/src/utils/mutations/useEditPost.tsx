@@ -131,6 +131,5 @@ export const useEditPost = (id: string) => {
     onMutate: (postUpdates) => sharedPostUpdater(queryClient, id, postUpdates),
     onError: (_, __, context) =>
       sharedPostFallbackUpdater(queryClient, id, context),
-    onSuccess: () => {},
   });
 };

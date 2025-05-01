@@ -223,8 +223,6 @@ class PostController {
     const userId = req.user.id; // Get userId from the authenticated user
     const { voteValue } = req.body; // The vote value (+1 or -1 or 0 to remove)
 
-    console.log(voteValue, "voteValue");
-
     // Check if the post exists
     const post = await Post.findById(id)
       .populate("author", "name")
