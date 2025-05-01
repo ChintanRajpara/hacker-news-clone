@@ -54,7 +54,10 @@ class PostController {
       .lean<IPostWithAuthor>();
 
     if (savedPost) {
-      const mappedPost = await postService.mapPostResponse(savedPost);
+      const mappedPost = await postService.mapPostResponse(
+        savedPost,
+        req.user?.id
+      );
 
       res.status(201).json({
         post: mappedPost,
@@ -114,7 +117,7 @@ class PostController {
       posts.pop(); // Remove the extra item
     }
 
-    const mappedPosts = await postService.mapPostsResponse(posts);
+    const mappedPosts = await postService.mapPostsResponse(posts, req.user?.id);
 
     res.json({
       posts: mappedPosts,
@@ -133,7 +136,7 @@ class PostController {
     if (!post) {
       res.status(404).json({ message: "Post not found" });
     } else {
-      const mappedPost = await postService.mapPostResponse(post);
+      const mappedPost = await postService.mapPostResponse(post, req.user?.id);
 
       res.json({ post: mappedPost });
     }
@@ -178,7 +181,7 @@ class PostController {
     if (!post) {
       res.status(404).json({ message: "Post not found" });
     } else {
-      const mappedPost = await postService.mapPostResponse(post);
+      const mappedPost = await postService.mapPostResponse(post, req.user?.id);
 
       res.json({ post: mappedPost, message: "Post updated successfully" });
     }
@@ -220,6 +223,8 @@ class PostController {
     const userId = req.user.id; // Get userId from the authenticated user
     const { voteValue } = req.body; // The vote value (+1 or -1 or 0 to remove)
 
+    console.log(voteValue, "voteValue");
+
     // Check if the post exists
     const post = await Post.findById(id)
       .populate("author", "name")
@@ -242,7 +247,10 @@ class PostController {
         // Remove the user's vote from the PostVote collection
         await PostVote.deleteOne({ _id: existingVote._id });
 
-        const mappedPost = await postService.mapPostResponse(post);
+        const mappedPost = await postService.mapPostResponse(
+          post,
+          req.user?.id
+        );
 
         res
           .status(200)
@@ -255,7 +263,10 @@ class PostController {
       if (existingVote.voteValue === voteValue) {
         // If the vote value is the same, don't update anything
 
-        const mappedPost = await postService.mapPostResponse(post);
+        const mappedPost = await postService.mapPostResponse(
+          post,
+          req.user?.id
+        );
 
         res
           .status(200)
@@ -274,7 +285,7 @@ class PostController {
       existingVote.voteValue = voteValue;
       await existingVote.save();
 
-      const mappedPost = await postService.mapPostResponse(post);
+      const mappedPost = await postService.mapPostResponse(post, req.user?.id);
 
       res
         .status(200)
@@ -292,7 +303,7 @@ class PostController {
     // await post.save(); // Save the updated post
     await Post.updateOne({ _id: post._id }, { votes: post.votes }); // Save the updated post
 
-    const mappedPost = await postService.mapPostResponse(post);
+    const mappedPost = await postService.mapPostResponse(post, req.user?.id);
 
     res
       .status(200)

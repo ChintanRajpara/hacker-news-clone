@@ -1,8 +1,7 @@
+type voteValue = 0 | -1 | 1;
+
 export type PostInfo = {
-  author: {
-    id: string;
-    name: string;
-  };
+  author: { id: string; name: string };
   comments_count: number;
   createdAt: Date;
   text?: string | null;
@@ -10,6 +9,7 @@ export type PostInfo = {
   url?: string | null;
   votes: number;
   id: string;
+  selfVoteValue: voteValue;
 };
 
 export type GetPostsResponse = {

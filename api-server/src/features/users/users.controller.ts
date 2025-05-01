@@ -66,7 +66,7 @@ class UsersController {
       // secure: process.env.NODE_ENV === "production",
       sameSite: "lax", // or "none" if using HTTPS
       secure: false, // true only if using HTTPS
-      maxAge: 24 * 60 * 60 * 1000, // optional expiry
+      maxAge: 7 * 24 * 60 * 60 * 1000, // optional expiry
     });
 
     res.status(200).json({ message: "Logged in successfully." });

@@ -4,10 +4,12 @@ import { UIDialog } from "../components/dialog";
 import { CreatePostModal } from "./createPost";
 import { useDebounce } from "../utils/hooks/useDebounce";
 import { usePostList } from "../utils/queries/usePostList";
-import { PostInfo } from "../utils/types/post";
+import { PostInfo, voteValue } from "../utils/types/post";
+import { useVotePost } from "../utils/mutations/useVotePost";
 
 const PostInfoContainer = ({ post }: { post: PostInfo }) => {
-  const { mutate } = useEditPost(post.id);
+  const { mutate: editPostMutate } = useEditPost(post.id);
+  const { mutate: votePostMutate } = useVotePost(post.id);
 
   return (
     <div className="border-b">
@@ -20,11 +22,44 @@ const PostInfoContainer = ({ post }: { post: PostInfo }) => {
       <p>
         author: {post.author.id}- {post.author.name}
       </p>
+      <p>selfVoteValue: {post.selfVoteValue}</p>
       <p>createdAt: {post.createdAt.toString()}</p>
 
       <button
         onClick={() => {
-          mutate({ text: `new-eraff-${Math.random() * 10000}` });
+          const selfVoteValue = (post.selfVoteValue === 1 ? 0 : 1) as voteValue;
+
+          const newVotes = post.votes + (selfVoteValue === 1 ? 1 : -1);
+
+          votePostMutate({
+            selfVoteValue,
+            votes: newVotes,
+          });
+        }}
+      >
+        {post.selfVoteValue === 1 ? "Unvote" : "Upvote"}
+      </button>
+
+      <button
+        onClick={() => {
+          const selfVoteValue = (
+            post.selfVoteValue === -1 ? 0 : -1
+          ) as voteValue;
+
+          const newVotes = post.votes + (selfVoteValue === -1 ? -1 : 1);
+
+          votePostMutate({
+            selfVoteValue,
+            votes: newVotes,
+          });
+        }}
+      >
+        {post.selfVoteValue === -1 ? "Unvote" : "downvote"}
+      </button>
+
+      <button
+        onClick={() => {
+          editPostMutate({ text: `new-eraff-${Math.random() * 10000}` });
         }}
       >
         Edit Post
@@ -35,15 +70,11 @@ const PostInfoContainer = ({ post }: { post: PostInfo }) => {
 
 export const PostList = () => {
   const [search, setSearch] = useState("");
+  const searchRef = useRef(search);
   const debouncedSearch = useDebounce(search, 500);
 
   const [createPostModalOpen, setCreatePostModalOpen] = useState(false);
   const [sort, setSort] = useState<"new" | "top" | "best">("new");
-
-  const searchRef = useRef(search);
-  useEffect(() => {
-    searchRef.current = search;
-  }, [search]);
 
   const { fetchNextPage, hasNextPage, isPending, posts, refetch } = usePostList(
     { search: debouncedSearch, sort }
@@ -52,6 +83,10 @@ export const PostList = () => {
   useEffect(() => {
     refetch();
   }, [refetch, sort, debouncedSearch]);
+
+  useEffect(() => {
+    searchRef.current = search;
+  }, [search]);
 
   return (
     <div>
