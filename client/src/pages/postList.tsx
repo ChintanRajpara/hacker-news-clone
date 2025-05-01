@@ -1,16 +1,15 @@
 import { useEditPost } from "../utils/mutations/useEditPost";
 import { useEffect, useRef, useState } from "react";
-import { UIDialog } from "../components/dialog";
-import { CreatePostModal } from "./createPost";
 import { useDebounce } from "../utils/hooks/useDebounce";
 import { usePostList } from "../utils/queries/usePostList";
 import { PostInfo, voteValue } from "../utils/types/post";
 import { useVotePost } from "../utils/mutations/useVotePost";
+import { useDeletePost } from "../utils/mutations/useDeletePost";
 
 const PostInfoContainer = ({ post }: { post: PostInfo }) => {
   const { mutate: editPostMutate } = useEditPost(post.id);
   const { mutate: votePostMutate } = useVotePost(post.id);
-
+  const { mutate: deletePostMutate } = useDeletePost(post.id);
   return (
     <div className="border-b">
       <p>id: {post.id}</p>
@@ -26,20 +25,26 @@ const PostInfoContainer = ({ post }: { post: PostInfo }) => {
       <p>createdAt: {post.createdAt.toString()}</p>
 
       <div className="flex gap-2">
-        <button className="btn">Delete Post</button>
+        <button
+          onClick={() => {
+            deletePostMutate();
+          }}
+          className="btn"
+        >
+          Delete Post
+        </button>
 
         <button
           className="btn"
           onClick={() => {
-            const selfVoteValue = (
-              post.selfVoteValue === 1 ? 0 : 1
-            ) as voteValue;
+            const previous = post.selfVoteValue; // -1, 0, or 1
+            const next = previous === 1 ? 0 : 1; // toggle between 1 and 0
 
-            const newVotes = post.votes + (selfVoteValue === 1 ? 1 : -1);
+            const delta = next - previous; // this handles all cases properly
 
             votePostMutate({
-              selfVoteValue,
-              votes: newVotes,
+              selfVoteValue: next as voteValue,
+              votes: post.votes + delta,
             });
           }}
         >
@@ -49,15 +54,14 @@ const PostInfoContainer = ({ post }: { post: PostInfo }) => {
         <button
           className="btn"
           onClick={() => {
-            const selfVoteValue = (
-              post.selfVoteValue === -1 ? 0 : -1
-            ) as voteValue;
+            const previous = post.selfVoteValue;
+            const next = previous === -1 ? 0 : -1;
 
-            const newVotes = post.votes + (selfVoteValue === -1 ? -1 : 1);
+            const delta = next - previous;
 
             votePostMutate({
-              selfVoteValue,
-              votes: newVotes,
+              selfVoteValue: next as voteValue,
+              votes: post.votes + delta,
             });
           }}
         >
@@ -82,7 +86,6 @@ export const PostList = () => {
   const searchRef = useRef(search);
   const debouncedSearch = useDebounce(search, 500);
 
-  const [createPostModalOpen, setCreatePostModalOpen] = useState(false);
   const [sort, setSort] = useState<"new" | "top" | "best">("new");
 
   const { fetchNextPage, hasNextPage, isPending, posts, refetch } = usePostList(
@@ -99,16 +102,6 @@ export const PostList = () => {
 
   return (
     <div>
-      <div>
-        <button
-          onClick={() => {
-            setCreatePostModalOpen(true);
-          }}
-        >
-          Create Post
-        </button>
-      </div>
-
       <div>
         <input
           placeholder="search.."
@@ -159,16 +152,6 @@ export const PostList = () => {
       ) : (
         <div>no data found</div>
       )}
-
-      <UIDialog
-        modalClassName="flex items-center justify-center"
-        open={createPostModalOpen}
-        requestClose={() => {
-          setCreatePostModalOpen(false);
-        }}
-      >
-        <CreatePostModal />
-      </UIDialog>
     </div>
   );
 };

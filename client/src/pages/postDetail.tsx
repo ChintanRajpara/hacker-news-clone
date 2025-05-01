@@ -117,6 +117,11 @@ const Post = ({ id }: { id: string }) => {
 
   return (
     <div>
+      <p>{post?.title}</p>
+      <p>{post?.author.name}</p>
+      <p>{post?.text}</p>
+      <p>{post?.url}</p>
+      <p>{post?.id}</p>
       <PostComments {...{ id }} />
     </div>
   );

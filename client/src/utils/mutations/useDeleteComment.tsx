@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   sharedCommentFallbackUpdater,
   sharedCommentUpdater,
-} from "./useEditComment";
+} from "../sharedUpdaters/comments";
 
 export const useDeleteComment = (
   commentId: string,

@@ -30,7 +30,7 @@ export const usePostList = ({
 
   const posts = useMemo(
     () => data?.pages.flatMap((page) => page.posts),
-    [data?.pages]
+    [data]
   );
 
   return { posts, fetchNextPage, hasNextPage, isPending, refetch };

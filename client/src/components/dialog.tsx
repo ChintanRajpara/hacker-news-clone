@@ -10,7 +10,7 @@ import { createPortal } from "react-dom";
 
 const transitionDurationInMS = 200;
 
-export type UIDialogProps = {
+export type DialogProps = {
   open: boolean;
   children: ReactNode;
   requestClose: () => void;
@@ -18,13 +18,13 @@ export type UIDialogProps = {
   disableClickAway?: boolean;
 };
 
-export const UIDialog = ({
+export const Dialog = ({
   open,
   children,
   requestClose,
   modalClassName,
   disableClickAway = false,
-}: UIDialogProps) => {
+}: DialogProps) => {
   const [transitionOpen, setTransitionOpen] = useState(open);
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);

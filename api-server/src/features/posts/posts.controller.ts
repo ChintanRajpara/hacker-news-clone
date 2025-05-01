@@ -4,6 +4,7 @@ import PostVote from "./userPostVote.model";
 import { postService } from "./posts.service";
 import { extractPostKeywords } from "../../utils/extractKeywords";
 import mongoose from "mongoose";
+import commentsModel from "../comments/comments.model";
 
 class PostController {
   // Singleton pattern
@@ -210,7 +211,9 @@ class PostController {
 
     await Post.deleteOne({ _id: id }).exec();
 
-    res.status(204).send();
+    await commentsModel.deleteMany({ postId: id });
+
+    res.status(200).json({ message: "Post deleted successfully" });
   }
 
   async vote(req: Request, res: Response) {

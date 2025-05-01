@@ -1,8 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { PostInfo, voteValue } from "../types/post";
-import { sharedPostFallbackUpdater, sharedPostUpdater } from "./useEditPost";
+import {
+  sharedPostFallbackUpdater,
+  sharedPostUpdater,
+} from "../sharedUpdaters/posts";
 
-export const useVotePost = (id: string) => {
+export const useVotePost = (postId: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -13,7 +16,7 @@ export const useVotePost = (id: string) => {
       votes: number;
     }) => {
       const res = await fetch(
-        `${import.meta.env.VITE_API_SERVER_ENDPOINT}/api/posts/${id}/vote`,
+        `${import.meta.env.VITE_API_SERVER_ENDPOINT}/api/posts/${postId}/vote`,
         {
           method: "PUT",
           body: JSON.stringify({ voteValue: selfVoteValue }),
@@ -25,9 +28,14 @@ export const useVotePost = (id: string) => {
       return (await res.json()) as { post: PostInfo };
     },
     onMutate: ({ selfVoteValue, votes }) =>
-      sharedPostUpdater(queryClient, id, { votes, selfVoteValue }),
+      sharedPostUpdater({
+        queryClient,
+        postId,
+        postUpdates: { votes, selfVoteValue },
+        op: "E",
+      }),
     onError: (_, __, context) => {
-      sharedPostFallbackUpdater(queryClient, id, context);
+      sharedPostFallbackUpdater(queryClient, postId, context);
     },
   });
 };

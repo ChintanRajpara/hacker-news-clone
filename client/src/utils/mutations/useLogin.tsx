@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 
-export const useLogin = () => {
+export const useLogin = ({ onSuccess }: { onSuccess: () => void }) => {
   return useMutation({
     mutationFn: async (authPayload: { email: string; password: string }) => {
       const res = await fetch(
@@ -13,7 +13,8 @@ export const useLogin = () => {
         }
       );
 
-      return res.json();
+      return (await res.json()) as { message: string };
     },
+    onSuccess,
   });
 };

@@ -1,10 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CommentInfo } from "../types/comments";
+
+import { nanoid } from "nanoid";
 import {
   sharedCommentFallbackUpdater,
   sharedCommentUpdater,
-} from "./useEditComment";
-import { nanoid } from "nanoid";
+} from "../sharedUpdaters/comments";
 
 export const useAddComment = () => {
   const queryClient = useQueryClient();

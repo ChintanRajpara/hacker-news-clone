@@ -1,15 +1,12 @@
-import {
-  InfiniteData,
-  QueryKey,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { nanoid } from "nanoid";
-import { GetPostsResponse, PostInfo } from "../types/post";
+import { PostInfo } from "../types/post";
+import {
+  sharedPostFallbackUpdater,
+  sharedPostUpdater,
+} from "../sharedUpdaters/posts";
 
 export const useCreatePost = () => {
-  const postsQueryKey: QueryKey = ["posts"];
-
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -30,10 +27,9 @@ export const useCreatePost = () => {
 
       return (await res.json()) as { post: PostInfo };
     },
-    onMutate: async (newPost) => {
-      const clientMutationId = `clientMutationId:${nanoid()}`;
 
-      await queryClient.cancelQueries({ queryKey: postsQueryKey });
+    onMutate: (newPost) => {
+      const clientMutationId = `clientMutationId:${nanoid()}`;
 
       const optimisticPost: PostInfo = {
         ...newPost,
@@ -45,68 +41,33 @@ export const useCreatePost = () => {
         selfVoteValue: 0,
       };
 
-      const postsQueryPreviousData =
-        queryClient.getQueryData<InfiniteData<GetPostsResponse>>(postsQueryKey);
-
-      // Update the cache with our optimistic comment
-      queryClient.setQueryData<InfiniteData<GetPostsResponse>>(
-        postsQueryKey,
-        (oldData) => {
-          const firstPage = oldData?.pages[0];
-
-          if (firstPage) {
-            return {
-              ...oldData,
-              pages: [
-                {
-                  ...firstPage,
-                  posts: [optimisticPost, ...firstPage.posts],
-                },
-                ...oldData.pages.slice(1),
-              ],
-            };
-          }
-
-          return oldData;
-        }
-      );
-
-      return { postsQueryPreviousData, clientMutationId };
+      return sharedPostUpdater({
+        queryClient,
+        postUpdates: optimisticPost,
+        postId: clientMutationId,
+        op: "A",
+        clientMutationId,
+      });
     },
     onError: (_, __, context) => {
-      if (context?.postsQueryPreviousData) {
-        queryClient.setQueryData<InfiniteData<GetPostsResponse>>(
-          postsQueryKey,
-          context.postsQueryPreviousData
+      if (context?.clientMutationId) {
+        sharedPostFallbackUpdater(
+          queryClient,
+          context?.clientMutationId,
+          context
         );
       }
     },
-    onSuccess(data, _, context) {
-      queryClient.setQueryData<InfiniteData<GetPostsResponse>>(
-        postsQueryKey,
-        (oldData) => {
-          const firstPage = oldData?.pages[0];
-
-          if (firstPage) {
-            const index = firstPage.posts.findIndex(
-              ({ id }) => id === context.clientMutationId
-            );
-
-            if (typeof index === "number" && index > -1) {
-              const posts = [...firstPage.posts];
-
-              posts[index] = data.post;
-
-              return {
-                ...oldData,
-                pages: [{ ...firstPage, posts }, ...oldData.pages.slice(1)],
-              };
-            }
-          }
-
-          return oldData;
-        }
-      );
+    onSuccess: async ({ post }, _, { clientMutationId }) => {
+      if (clientMutationId) {
+        return sharedPostUpdater({
+          queryClient,
+          postUpdates: post,
+          postId: clientMutationId,
+          op: "E",
+          clientMutationId,
+        });
+      }
     },
   });
 };
