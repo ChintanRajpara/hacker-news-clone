@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { PostInfo, voteValue } from "../types/post";
+import { PostInfo, VoteValue } from "../../types/post";
 import {
   sharedPostFallbackUpdater,
   sharedPostUpdater,
@@ -12,7 +12,7 @@ export const useVotePost = (postId: string) => {
     mutationFn: async ({
       selfVoteValue,
     }: {
-      selfVoteValue: voteValue;
+      selfVoteValue: VoteValue;
       votes: number;
     }) => {
       const res = await fetch(

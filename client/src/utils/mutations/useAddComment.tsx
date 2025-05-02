@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CommentInfo } from "../types/comments";
+import { CommentInfo } from "../../types/comment";
 
 import { nanoid } from "nanoid";
 import {

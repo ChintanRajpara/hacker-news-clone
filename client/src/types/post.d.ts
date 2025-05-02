@@ -1,4 +1,4 @@
-type voteValue = 0 | -1 | 1;
+type VoteValue = 0 | -1 | 1;
 
 export type PostInfo = {
   author: { id: string; name: string };
@@ -9,7 +9,7 @@ export type PostInfo = {
   url?: string | null;
   votes: number;
   id: string;
-  selfVoteValue: voteValue;
+  selfVoteValue: VoteValue;
 };
 
 export type GetPostsResponse = {

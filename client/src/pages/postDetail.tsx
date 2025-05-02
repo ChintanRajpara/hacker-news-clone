@@ -1,7 +1,7 @@
 import { usePostDetail } from "../utils/queries/usePostDetail";
 import { useAddComment } from "../utils/mutations/useAddComment";
 import { useComments } from "../utils/queries/useComments";
-import { CommentInfo } from "../utils/types/comments";
+import { CommentInfo } from "../types/comment";
 import { useParams } from "react-router-dom";
 import { useEditComment } from "../utils/mutations/useEditComment";
 import { useDeleteComment } from "../utils/mutations/useDeleteComment";

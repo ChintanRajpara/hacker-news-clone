@@ -1,6 +1,6 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { GetPostsResponse } from "../types/post";
+import { GetPostsResponse } from "../../types/post";
 
 export const usePostList = ({
   search,

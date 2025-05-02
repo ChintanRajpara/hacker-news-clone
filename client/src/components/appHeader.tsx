@@ -1,6 +1,7 @@
-import { FaBars, FaRegBell } from "react-icons/fa6";
+import { FaBars, FaPlus, FaRegBell } from "react-icons/fa6";
 import { useAppContext } from "../utils/appContext/context";
 import { useAuthenticatedClick } from "../utils/hooks/useAuthenticatedClick";
+import { Link } from "react-router-dom";
 
 const CreateButton = () => {
   const { setCreatePostDialogOpen } = useAppContext();
@@ -12,12 +13,15 @@ const CreateButton = () => {
       onClick={() => authenticatedClick(() => setCreatePostDialogOpen(true))}
       className="btn btn-primary btn-sm sm:btn-md"
     >
+      <FaPlus />
       Create Post
     </button>
   );
 };
 
 const NotificationButton = () => {
+  return <></>;
+
   return (
     <button className="btn btn-ghost btn-circle">
       <div className="indicator">
@@ -39,7 +43,7 @@ const LoginSignup = () => {
       </li>
 
       <li onClick={() => setSignupDialogOpen(true)}>
-        <a className="link">Signup</a>
+        <a className="link link-secondary">Signup</a>
       </li>
     </ul>
   );
@@ -78,7 +82,9 @@ export const AppHeader = () => {
           </ul>
         </div>
 
-        <a className="btn btn-ghost text-lg">Hacker News clone</a>
+        <Link to={"/"} className="btn btn-ghost text-lg">
+          Hacker News clone
+        </Link>
       </div>
 
       <div className="navbar-center hidden sm:inline-flex">

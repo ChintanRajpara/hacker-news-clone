@@ -3,11 +3,11 @@ import {
   GetPostDetailResponse,
   GetPostsResponse,
   PostInfo,
-} from "../types/post";
+} from "../../types/post";
 import nanoclone from "nanoclone";
 
-const postsQueryKey = () => ["posts"] as QueryKey;
-const postDetailQueryKey = (id: string) => ["posts", id] as QueryKey;
+export const postsQueryKey = () => ["posts"] as QueryKey;
+const postDetailQueryKey = (id: string) => ["post-detail", id] as QueryKey;
 
 export const sharedPostUpdater = async ({
   queryClient,
@@ -73,7 +73,10 @@ export const sharedPostUpdater = async ({
       postDetailQueryKey(postId),
       {
         ...postDetailQueryPreviousData,
-        ...postUpdates,
+        post: {
+          ...postDetailQueryPreviousData.post,
+          ...postUpdates,
+        },
       }
     );
   }

@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { GetPostDetailResponse } from "../types/post";
+import { GetPostDetailResponse } from "../../types/post";
 
 export const usePostDetail = (id?: string) => {
-  const { data } = useQuery({
+  const { data, isPending } = useQuery({
     queryKey: ["post-detail", id],
     queryFn: async () => {
       const res = await fetch(
@@ -13,5 +13,5 @@ export const usePostDetail = (id?: string) => {
     },
   });
 
-  return { post: data?.post };
+  return { post: data?.post, isPending };
 };

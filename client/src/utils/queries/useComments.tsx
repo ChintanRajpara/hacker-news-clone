@@ -1,5 +1,5 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { GetCommentsResponse } from "../types/comments";
+import { GetCommentsResponse } from "../../types/comment";
 import { useMemo } from "react";
 
 export const useComments = (postId: string) => {

@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
-import { GetMeResponse, IUser } from "../utils/types/user";
+import { GetMeResponse, IUser } from "../types/user";
 import { AppContext } from "../utils/appContext/context";
 
 export const AppContextProvider = ({ children }: { children: ReactNode }) => {

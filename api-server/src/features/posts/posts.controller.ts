@@ -5,6 +5,7 @@ import { postService } from "./posts.service";
 import { extractPostKeywords } from "../../utils/extractKeywords";
 import mongoose from "mongoose";
 import commentsModel from "../comments/comments.model";
+import { decodeCursor, encodeCursor } from "../../utils/pagination";
 
 class PostController {
   // Singleton pattern
@@ -69,53 +70,166 @@ class PostController {
     }
   }
 
+  // async getAll(req: Request, res: Response): Promise<void> {
+  //   const limit = Number(req.query.limit) || 10;
+  //   const cursor = req.query?.cursor;
+  //   const sort = req.query.sort ?? "new";
+  //   const search = req.query.search ?? "";
+
+  //   const cursorObjectId = cursor
+  //     ? new mongoose.Types.ObjectId(cursor as string)
+  //     : null;
+  //   const searchTerm = String(search).trim().toLowerCase();
+
+  //   // Base filter
+  //   const filter: any = {};
+
+  //   // Add search filter if search term is provided
+  //   if (searchTerm) {
+  //     filter.keywords = { $in: [searchTerm] }; // You can tokenize the searchTerm further if needed
+  //   }
+
+  //   // Add cursor-based filter
+  //   if (cursorObjectId) {
+  //     filter._id = { $lt: cursorObjectId };
+  //   }
+
+  //   // Set sort logic
+  //   let sortOptions: any = {};
+  //   if (sort === "new") {
+  //     sortOptions = { createdAt: -1 };
+  //   } else if (sort === "top") {
+  //     sortOptions = { votes: -1, comments_count: -1 };
+  //   } else if (sort === "best") {
+  //     sortOptions = { votes: -1, comments_count: -1, createdAt: -1 };
+  //   }
+
+  //   // Fetch posts
+  //   const posts = await Post.find(filter)
+  //     .sort(sortOptions)
+  //     .limit(limit + 1)
+  //     .populate("author", "name")
+  //     .lean<IPostWithAuthor[]>();
+
+  //   // Set next cursor if there are more posts
+  //   let nextCursor: string | null = null;
+  //   if (posts.length > limit) {
+  //     const nextItem = posts[limit]; // The extra one
+  //     nextCursor = nextItem._id.toString(); // or createdAt, depending on sort
+  //     posts.pop(); // Remove the extra item
+  //   }
+
+  //   const mappedPosts = await postService.mapPostsResponse(posts, req.user?.id);
+
+  //   res.json({
+  //     posts: mappedPosts,
+  //     pageInfo: { nextCursor },
+  //   });
+  // }
+
   async getAll(req: Request, res: Response): Promise<void> {
     const limit = Number(req.query.limit) || 10;
-    const cursor = req.query?.cursor;
     const sort = req.query.sort ?? "new";
-    const search = req.query.search ?? "";
+    const search = String(req.query.search ?? "")
+      .trim()
+      .toLowerCase();
+    const cursorRaw = req.query.cursor;
+    const cursor = cursorRaw ? decodeCursor(cursorRaw as string) : null;
 
-    const cursorObjectId = cursor
-      ? new mongoose.Types.ObjectId(cursor as string)
-      : null;
-    const searchTerm = String(search).trim().toLowerCase();
-
-    // Base filter
     const filter: any = {};
 
-    // Add search filter if search term is provided
-    if (searchTerm) {
-      filter.keywords = { $in: [searchTerm] }; // You can tokenize the searchTerm further if needed
+    if (search) {
+      filter.keywords = { $in: [search] };
     }
 
-    // Add cursor-based filter
-    if (cursorObjectId) {
-      filter._id = { $lt: cursorObjectId };
-    }
-
-    // Set sort logic
-    let sortOptions: any = {};
+    // Cursor logic based on sort type
+    const sortOptions: any = {};
     if (sort === "new") {
-      sortOptions = { createdAt: -1 };
+      sortOptions.createdAt = -1;
+      sortOptions._id = -1;
+
+      // sortOptions = { createdAt: -1, _id: -1 };
+
+      if (cursor) {
+        filter._id = { $lt: cursor };
+      }
     } else if (sort === "top") {
-      sortOptions = { votes: -1, comments_count: -1 };
+      sortOptions.votes = -1;
+      sortOptions.comments_count = -1;
+      sortOptions._id = -1;
+
+      if (cursor) {
+        filter.$or = [
+          { votes: { $lt: cursor.votes } },
+          {
+            votes: cursor.votes,
+            comments_count: { $lt: cursor.comments_count },
+          },
+          {
+            votes: cursor.votes,
+            comments_count: cursor.comments_count,
+            _id: { $lt: cursor._id },
+          },
+        ];
+      }
     } else if (sort === "best") {
-      sortOptions = { votes: -1, comments_count: -1, createdAt: -1 };
+      sortOptions.votes = -1;
+      sortOptions.comments_count = -1;
+      sortOptions.createdAt = -1;
+      sortOptions._id = -1;
+
+      if (cursor) {
+        filter.$or = [
+          { votes: { $lt: cursor.votes } },
+          {
+            votes: cursor.votes,
+            comments_count: { $lt: cursor.comments_count },
+          },
+          {
+            votes: cursor.votes,
+            comments_count: cursor.comments_count,
+            createdAt: { $lt: new Date(cursor.createdAt) },
+          },
+          {
+            votes: cursor.votes,
+            comments_count: cursor.comments_count,
+            createdAt: new Date(cursor.createdAt),
+            _id: { $lt: cursor._id },
+          },
+        ];
+      }
     }
 
-    // Fetch posts
     const posts = await Post.find(filter)
       .sort(sortOptions)
       .limit(limit + 1)
       .populate("author", "name")
       .lean<IPostWithAuthor[]>();
 
-    // Set next cursor if there are more posts
     let nextCursor: string | null = null;
     if (posts.length > limit) {
-      const nextItem = posts[limit]; // The extra one
-      nextCursor = nextItem._id.toString(); // or createdAt, depending on sort
-      posts.pop(); // Remove the extra item
+      const lastPost = posts[limit];
+      posts.pop();
+
+      if (sort === "new") {
+        nextCursor = encodeCursor({
+          createdAt: lastPost.createdAt,
+          _id: lastPost._id,
+        });
+      } else if (sort === "top") {
+        nextCursor = encodeCursor({
+          votes: lastPost.votes,
+          comments_count: lastPost.comments_count,
+          _id: lastPost._id,
+        });
+      } else if (sort === "best") {
+        nextCursor = encodeCursor({
+          votes: lastPost.votes,
+          comments_count: lastPost.comments_count,
+          createdAt: lastPost.createdAt,
+          _id: lastPost._id,
+        });
+      }
     }
 
     const mappedPosts = await postService.mapPostsResponse(posts, req.user?.id);

@@ -1,12 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { nanoid } from "nanoid";
-import { PostInfo } from "../types/post";
+import { PostInfo } from "../../types/post";
 import {
   sharedPostFallbackUpdater,
   sharedPostUpdater,
 } from "../sharedUpdaters/posts";
 
-export const useCreatePost = () => {
+export const useCreatePost = ({ onSuccess }: { onSuccess: () => void }) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -68,6 +68,8 @@ export const useCreatePost = () => {
           clientMutationId,
         });
       }
+
+      onSuccess();
     },
   });
 };

@@ -1,6 +1,6 @@
 import { InfiniteData, QueryClient, QueryKey } from "@tanstack/react-query";
 import nanoclone from "nanoclone";
-import { CommentInfo, GetCommentsResponse } from "../types/comments";
+import { CommentInfo, GetCommentsResponse } from "../../types/comment";
 
 const commentsQueryKey = (postId: string) => ["comments", postId] as QueryKey;
 
