@@ -5,7 +5,13 @@ import { Dialog } from "./dialog";
 export const LogoutDialog = () => {
   const { logoutDialogOpen, setLogoutDialogOpen, resetAuth } = useAppContext();
 
-  const { mutate } = useLogout({ onSuccess: resetAuth });
+  const { mutate } = useLogout({
+    onSuccess: () => {
+      setLogoutDialogOpen(false);
+
+      resetAuth();
+    },
+  });
 
   return (
     <Dialog

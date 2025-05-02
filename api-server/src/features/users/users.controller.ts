@@ -31,10 +31,24 @@ class UsersController {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await usersModel.create({
+    const user = await usersModel.create({
       name,
       email,
       password: hashedPassword,
+    });
+
+    const token = jwt.sign(
+      { id: user._id.toString(), email: user.email, name: user.name } as IUser,
+      process.env.JWT_SECRET as string,
+      { expiresIn: "7d" }
+    );
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      // secure: process.env.NODE_ENV === "production",
+      sameSite: "lax", // or "none" if using HTTPS
+      secure: false, // true only if using HTTPS
+      maxAge: 7 * 24 * 60 * 60 * 1000, // optional expiry
     });
 
     res.status(201).json({ message: "User created successfully." });

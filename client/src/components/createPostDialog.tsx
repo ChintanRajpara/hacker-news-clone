@@ -6,9 +6,9 @@ import { useCreatePost } from "../utils/mutations/useCreatePost";
 export const CreatePostDialog = () => {
   const { createPostDialogOpen, setCreatePostDialogOpen } = useAppContext();
 
-  const [title, settitle] = useState("");
-  const [url, seturl] = useState("");
-  const [text, settext] = useState("");
+  const [title, settitle] = useState("title");
+  const [url, seturl] = useState("http://localhost:5173/");
+  const [text, settext] = useState("text");
 
   const { mutate } = useCreatePost();
 

@@ -1,10 +1,7 @@
-import { QueryClient } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
 import { IUser } from "../types/user";
 
 type AppContextData = {
-  queryClient: QueryClient;
-  setQueryClient: React.Dispatch<React.SetStateAction<QueryClient>>;
   auth: { user: IUser | null };
   setAuth: React.Dispatch<React.SetStateAction<{ user: IUser | null }>>;
   resetAuth: () => Promise<void>;
@@ -20,8 +17,6 @@ type AppContextData = {
 };
 
 export const AppContext = createContext<AppContextData>({
-  queryClient: new QueryClient(),
-  setQueryClient: () => {},
   auth: { user: null },
   setAuth: () => {},
   resetAuth: async () => {},

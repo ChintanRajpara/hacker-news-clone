@@ -5,7 +5,6 @@ import { useMemo } from "react";
 export const useComments = (postId: string) => {
   const { data, fetchNextPage, hasNextPage, isPending, refetch } =
     useInfiniteQuery({
-      networkMode: "always",
       queryKey: ["comments", postId],
       queryFn: async ({ pageParam }) => {
         const url = `${

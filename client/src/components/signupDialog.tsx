@@ -1,24 +1,34 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useAppContext } from "../utils/appContext/context";
 import { Dialog } from "./dialog";
 import { useSignup } from "../utils/mutations/useSignup";
 
 export const SignupDialog = () => {
-  const { signupDialogOpen, setSignupDialogOpen } = useAppContext();
+  const { signupDialogOpen, setSignupDialogOpen, resetAuth } = useAppContext();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const { mutate } = useSignup({ onSuccess: () => {} });
+  const _handleClose = useCallback(() => {
+    setName("");
+    setEmail("");
+    setPassword("");
+    setSignupDialogOpen(false);
+  }, [setName, setEmail, setPassword, setSignupDialogOpen]);
+
+  const { mutate } = useSignup({
+    onSuccess: () => {
+      _handleClose();
+      resetAuth();
+    },
+  });
 
   return (
     <Dialog
       modalClassName="flex items-center justify-center"
       open={signupDialogOpen}
-      requestClose={() => {
-        setSignupDialogOpen(false);
-      }}
+      requestClose={_handleClose}
     >
       <div>
         <form

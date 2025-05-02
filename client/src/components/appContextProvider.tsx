@@ -1,10 +1,10 @@
-import { QueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { GetMeResponse, IUser } from "../utils/types/user";
 import { AppContext } from "../utils/appContext/context";
 
 export const AppContextProvider = ({ children }: { children: ReactNode }) => {
-  const [queryClient, setQueryClient] = useState(new QueryClient());
+  const queryClient = useQueryClient();
   const [auth, setAuth] = useState<{ user: IUser | null }>({ user: null });
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const [signupDialogOpen, setSignupDialogOpen] = useState(false);
@@ -23,13 +23,17 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
 
         if (user) {
           setAuth({ user });
+          queryClient.invalidateQueries();
         }
+      } else {
+        setAuth({ user: null });
+        queryClient.invalidateQueries();
       }
     } catch (err) {
       console.error(err, "fetch-me");
       //
     }
-  }, []);
+  }, [queryClient]);
 
   const resetAuthRef = useRef(resetAuth);
   useEffect(() => {
@@ -42,8 +46,6 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
   return (
     <AppContext.Provider
       value={{
-        queryClient,
-        setQueryClient,
         auth,
         setAuth,
         resetAuth,
