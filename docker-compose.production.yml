@@ -1,0 +1,42 @@
+version: "3"
+
+services:
+  react-app:
+    image: react-app-prod
+    build: 
+      context: ./client/
+      dockerfile: Dockerfile.production
+    stdin_open: true
+    ports:
+      - "5173:5173"
+    networks:
+      - hackernews-app
+
+  api-server:
+    image: api-server-prod
+    build: 
+      context: ./api-server/
+      dockerfile: Dockerfile.production
+    ports:
+      - "8080:8080"
+    networks:
+      - hackernews-app
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongodb/mongodb-community-server:latest
+    ports:
+      - "27017:27017"
+    networks:
+      - hackernews-app
+    volumes:
+      - mongo-data:/data/db
+
+networks:
+  hackernews-app:
+    driver: bridge
+
+volumes:
+  mongo-data:
+    driver: local

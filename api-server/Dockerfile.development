@@ -8,8 +8,8 @@ COPY ./package-lock.json ./
 RUN npm install
 
 COPY . .
+COPY .env.development .env
 
-EXPOSE 5173
+EXPOSE 8080
 
 CMD ["npm", "run", "dev"]
-
