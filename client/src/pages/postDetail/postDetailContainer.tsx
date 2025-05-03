@@ -7,7 +7,11 @@ import { HeadingContainer } from "./headingContainer";
 import { useComments } from "../../utils/queries/useComments";
 import { CommentInfo } from "../../types/comment";
 import { formatDistanceToNow } from "date-fns";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useAddComment } from "../../utils/mutations/useAddComment";
+import { EditableParagraph } from "../../components/editableParagraph";
+import { useAppContext } from "../../utils/appContext/context";
+import { useEditComment } from "../../utils/mutations/useEditComment";
 
 const CommentReplyContainer = ({
   comment,
@@ -16,108 +20,189 @@ const CommentReplyContainer = ({
   comment: CommentInfo;
   topLevelParentId?: string;
 }) => {
+  const { auth } = useAppContext();
+
   const [replying, setReplying] = useState(false);
+
+  const [hideComment, setHideComment] = useState(false);
+
+  const [replyText, setReplyText] = useState("");
+
+  const { mutate: editCommentMutate } = useEditComment(
+    comment.id,
+    topLevelParentId,
+    comment.postId
+  );
+  const { mutate: addCommentMutate } = useAddComment();
+
+  const isAuthor = useMemo(
+    () => comment.author.id === auth.user?.id,
+    [comment.author.id, auth.user?.id]
+  );
+
   return (
     <div className="flex flex-col gap-2.5">
       <div className="flex flex-col gap-1">
-        <div>
-          <p className="text-sm text-base-content/55 text-light">
+        <div className="text-sm text-base-content/65 text-light flex gap-3">
+          <p>
             <span className="font-medium">{comment.author.name}</span>
             {` commented ${formatDistanceToNow(new Date(comment.createdAt), {
               addSuffix: true,
             })}`}
           </p>
+
+          <div>|</div>
+
+          <p
+            className="link link-base text-sm text-base-content/65 text-light"
+            onClick={() => {
+              setHideComment((s) => !s);
+            }}
+          >
+            {hideComment
+              ? "show comment and replies"
+              : "hide comment and replies"}
+          </p>
         </div>
 
-        <p className="text-md font-medium text-base-content">
-          {/* {comment.text} */}
-          Lorem Ipsum is simply dummy text of the printing and typesetting
-          industry. Lorem Ipsum has been the industry's standard dummy text ever
-          since the 1500s, when an unknown printer took a galley of type and
-          scrambled it to make a type specimen book. It has survived not only
-          five centuries, but also the leap into electronic typesetting,
-          remaining essentially unchanged. It was popularised in the 1960s with
-          the release of Letraset sheets containing Lorem Ipsum passages, and
-          more recently with desktop publishing software like Aldus PageMaker
-          including versions of Lorem Ipsum.
-        </p>
-
-        <div>
-          {replying ? (
-            <div className="flex flex-col gap-2 items-start">
-              <textarea
-                placeholder="share your thoughts..."
-                className="textarea w-full "
-              />
-
-              <div className="flex gap-3">
-                <button
-                  onClick={() => {
-                    setReplying(false);
-                  }}
-                  className="btn btn-error text-error-content btn-xs"
-                >
-                  Cancel
-                </button>
-
-                <button
-                  onClick={() => {
-                    setReplying(false);
-                  }}
-                  className="btn btn-success text-success-content btn-xs"
-                >
-                  Reply
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div>
-              <p
-                onClick={() => {
-                  setReplying(true);
+        {hideComment ? (
+          <></>
+        ) : (
+          <>
+            {isAuthor ? (
+              <EditableParagraph
+                {...{
+                  onChange: (text) => editCommentMutate({ text }),
+                  value: comment.text,
+                  className: "text-md font-medium text-base-content",
                 }}
-                className="link text-sm font-normal text-base-content"
-              >
-                Reply
+              />
+            ) : (
+              <p className="text-md font-medium text-base-content">
+                {comment.text}
               </p>
+            )}
+
+            <div>
+              {replying ? (
+                <div className="flex flex-col gap-2 items-start">
+                  <textarea
+                    value={replyText}
+                    onChange={(e) => {
+                      setReplyText(e.target.value);
+                    }}
+                    placeholder="share your thoughts..."
+                    className="textarea w-full "
+                  />
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setReplyText("");
+                        setReplying(false);
+                      }}
+                      className="btn btn-error text-error-content btn-xs"
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        const text = replyText;
+
+                        addCommentMutate({
+                          topLevelParentId,
+                          newComment: {
+                            text,
+                            parentId: comment.id,
+                            postId: comment.postId,
+                          },
+                        });
+
+                        setReplyText("");
+                        setReplying(false);
+                      }}
+                      className="btn btn-success text-success-content btn-xs"
+                    >
+                      Reply
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <p
+                    onClick={() => setReplying(true)}
+                    className="link text-sm font-normal text-base-content"
+                  >
+                    Reply
+                  </p>
+                </div>
+              )}
             </div>
-          )}
+          </>
+        )}
+      </div>
+
+      {hideComment ? (
+        <></>
+      ) : (
+        <div className="pl-10 flex flex-col gap-4">
+          {comment.replies.map((reply) => {
+            return (
+              <CommentReplyContainer
+                key={reply.id}
+                {...{
+                  comment: reply,
+                  topLevelParentId: topLevelParentId ?? comment.id,
+                }}
+              />
+            );
+          })}
         </div>
-      </div>
-      <div className="pl-10 flex flex-col gap-4">
-        {comment.replies.map((reply) => {
-          return (
-            <CommentReplyContainer
-              key={reply.id}
-              {...{
-                comment: reply,
-                topLevelParentId: topLevelParentId ?? comment.id,
-              }}
-            />
-          );
-        })}
-      </div>
+      )}
     </div>
   );
 };
 
 const PostCommentsContainer = ({ post }: { post: PostInfo }) => {
+  const [newCommentText, setNewCommentText] = useState("");
+
   const { comments } = useComments(post.id);
+
+  const { mutate } = useAddComment();
 
   return comments?.length ? (
     <div>
       <div className="flex flex-col gap-2 items-start">
         <textarea
+          value={newCommentText}
           placeholder="share your thoughts..."
           className="textarea w-full "
+          onChange={(e) => {
+            setNewCommentText(e.target.value);
+          }}
         ></textarea>
 
-        <button className="btn btn-secondary btn-soft btn-sm">Comment</button>
+        <button
+          onClick={() => {
+            const text = newCommentText;
+
+            mutate({ newComment: { postId: post.id, text } });
+
+            setNewCommentText("");
+          }}
+          className="btn btn-secondary btn-soft btn-sm"
+        >
+          Comment
+        </button>
       </div>
       <div className="mt-5">
-        {comments.map((comment) => {
-          return <CommentReplyContainer {...{ comment }} key={comment.id} />;
-        })}
+        {comments.map((comment) => (
+          <CommentReplyContainer
+            {...{ comment, topLevelParentId: comment.id }}
+            key={comment.id}
+          />
+        ))}
       </div>
     </div>
   ) : (

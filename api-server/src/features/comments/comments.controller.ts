@@ -71,9 +71,10 @@ class CommentsController {
       commentsWithReplies.push(comment);
     }
 
-    res
-      .status(200)
-      .json({ comments: commentsWithReplies, pageInfo: { nextCursor } });
+    res.status(200).json({
+      comments: CommentsService.sortCommentsNewestFirst(commentsWithReplies),
+      pageInfo: { nextCursor },
+    });
   }
 
   async updateComment(req: Request, res: Response) {

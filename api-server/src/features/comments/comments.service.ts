@@ -42,7 +42,7 @@ class CommentsService {
 
     const comments = (
       await CommentsModel.find(query)
-        .sort({ _id: -1 })
+        .sort({ id: -1 })
         .limit(limit + 1)
         .populate("author", "name")
         .lean<ICommentWithReplies[]>()
@@ -71,6 +71,23 @@ class CommentsService {
     }
 
     return replies;
+  }
+
+  sortCommentsNewestFirst(comments: CommentInfo[]): CommentInfo[] {
+    const sorted = [...comments];
+
+    sorted.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
+    for (const comment of sorted) {
+      if (comment.replies?.length) {
+        comment.replies = this.sortCommentsNewestFirst(comment.replies);
+      }
+    }
+
+    return sorted;
   }
 
   async updateComment(commentId: string, userId: string, text: string) {
