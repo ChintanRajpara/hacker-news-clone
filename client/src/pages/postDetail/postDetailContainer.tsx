@@ -12,6 +12,7 @@ import { useAddComment } from "../../utils/mutations/useAddComment";
 import { EditableParagraph } from "../../components/editableParagraph";
 import { useAppContext } from "../../utils/appContext/context";
 import { useEditComment } from "../../utils/mutations/useEditComment";
+import { useAuthenticatedClick } from "../../utils/hooks/useAuthenticatedClick";
 
 const CommentReplyContainer = ({
   comment,
@@ -39,6 +40,8 @@ const CommentReplyContainer = ({
     () => comment.author.id === auth.user?.id,
     [comment.author.id, auth.user?.id]
   );
+
+  const { authenticatedClick } = useAuthenticatedClick();
 
   return (
     <div className="flex flex-col gap-2.5">
@@ -131,7 +134,11 @@ const CommentReplyContainer = ({
               ) : (
                 <div>
                   <p
-                    onClick={() => setReplying(true)}
+                    onClick={() => {
+                      authenticatedClick(() => {
+                        setReplying(true);
+                      });
+                    }}
                     className="link text-sm font-normal text-base-content"
                   >
                     Reply
@@ -167,11 +174,17 @@ const CommentReplyContainer = ({
 const PostCommentsContainer = ({ post }: { post: PostInfo }) => {
   const [newCommentText, setNewCommentText] = useState("");
 
-  const { comments } = useComments(post.id);
+  const { comments, isPending } = useComments(post.id);
 
   const { mutate } = useAddComment();
 
-  return comments?.length ? (
+  const { authenticatedClick } = useAuthenticatedClick();
+
+  return isPending ? (
+    <div className="flex items-center justify-center w-full">
+      <LoadingBars />
+    </div>
+  ) : comments?.length ? (
     <div>
       <div className="flex flex-col gap-2 items-start">
         <textarea
@@ -184,12 +197,15 @@ const PostCommentsContainer = ({ post }: { post: PostInfo }) => {
         ></textarea>
 
         <button
+          disabled={!newCommentText}
           onClick={() => {
-            const text = newCommentText;
+            authenticatedClick(() => {
+              const text = newCommentText;
 
-            mutate({ newComment: { postId: post.id, text } });
+              mutate({ newComment: { postId: post.id, text } });
 
-            setNewCommentText("");
+              setNewCommentText("");
+            });
           }}
           className="btn btn-secondary btn-soft btn-sm"
         >

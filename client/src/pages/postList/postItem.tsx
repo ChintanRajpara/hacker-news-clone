@@ -89,7 +89,7 @@ export const PostItem = ({
       <div className="flex gap-3">
         <WrapperComponent {...props}>
           <div
-            className={`[&>*]:px-2 [&>*]:h-[36px] [&>*]:w-full gap-2 flex flex-1 flex-col ${
+            className={`[&>*]:px-2 [&>*]:w-full gap-2 flex flex-1 flex-col ${
               isEditing
                 ? "[&>*]:border-0 [&>*]:outline-neutral [&>*]:outline"
                 : "[&>*]:flex [&>*]:items-center"

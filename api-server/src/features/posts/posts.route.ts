@@ -1,4 +1,3 @@
-// src/features/posts/posts.route.ts
 import { Router } from "express";
 import { postController } from "./posts.controller";
 import { authMiddleware } from "../../middleware/auth.middleware";

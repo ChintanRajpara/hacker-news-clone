@@ -1,4 +1,3 @@
-// src/features/posts/posts.model.ts
 import mongoose, { Document, Schema, Types, model } from "mongoose";
 
 export interface IPost {

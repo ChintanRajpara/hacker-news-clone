@@ -21,7 +21,9 @@ class UsersController {
   }
 
   async signup(req: Request, res: Response) {
-    const { name, email, password } = req.body;
+    const { name, password } = req.body;
+
+    const email = String(req.body.email).toLowerCase();
 
     const existingUser = await usersModel.findOne({ email });
     if (existingUser) {

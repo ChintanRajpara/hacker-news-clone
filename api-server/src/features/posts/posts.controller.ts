@@ -70,63 +70,6 @@ class PostController {
     }
   }
 
-  // async getAll(req: Request, res: Response): Promise<void> {
-  //   const limit = Number(req.query.limit) || 10;
-  //   const cursor = req.query?.cursor;
-  //   const sort = req.query.sort ?? "new";
-  //   const search = req.query.search ?? "";
-
-  //   const cursorObjectId = cursor
-  //     ? new mongoose.Types.ObjectId(cursor as string)
-  //     : null;
-  //   const searchTerm = String(search).trim().toLowerCase();
-
-  //   // Base filter
-  //   const filter: any = {};
-
-  //   // Add search filter if search term is provided
-  //   if (searchTerm) {
-  //     filter.keywords = { $in: [searchTerm] }; // You can tokenize the searchTerm further if needed
-  //   }
-
-  //   // Add cursor-based filter
-  //   if (cursorObjectId) {
-  //     filter._id = { $lt: cursorObjectId };
-  //   }
-
-  //   // Set sort logic
-  //   let sortOptions: any = {};
-  //   if (sort === "new") {
-  //     sortOptions = { createdAt: -1 };
-  //   } else if (sort === "top") {
-  //     sortOptions = { votes: -1, comments_count: -1 };
-  //   } else if (sort === "best") {
-  //     sortOptions = { votes: -1, comments_count: -1, createdAt: -1 };
-  //   }
-
-  //   // Fetch posts
-  //   const posts = await Post.find(filter)
-  //     .sort(sortOptions)
-  //     .limit(limit + 1)
-  //     .populate("author", "name")
-  //     .lean<IPostWithAuthor[]>();
-
-  //   // Set next cursor if there are more posts
-  //   let nextCursor: string | null = null;
-  //   if (posts.length > limit) {
-  //     const nextItem = posts[limit]; // The extra one
-  //     nextCursor = nextItem._id.toString(); // or createdAt, depending on sort
-  //     posts.pop(); // Remove the extra item
-  //   }
-
-  //   const mappedPosts = await postService.mapPostsResponse(posts, req.user?.id);
-
-  //   res.json({
-  //     posts: mappedPosts,
-  //     pageInfo: { nextCursor },
-  //   });
-  // }
-
   async getAll(req: Request, res: Response): Promise<void> {
     const limit = Number(req.query.limit) || 10;
     const sort = req.query.sort ?? "new";
