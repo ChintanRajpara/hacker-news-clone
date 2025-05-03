@@ -9,9 +9,11 @@ const dbHost = process.env.DB_HOST;
 const dbName = process.env.DB_NAME;
 const dbPort = process.env.DB_PORT;
 
+const dbUrl = `mongodb://${dbHost}:${dbPort}/${dbName}`;
+
 //db connection
 export const connectDB = mongoose
-  .connect(`mongodb://${dbHost}:${dbPort}/${dbName}`)
+  .connect(dbUrl)
   .then((res) => {
     if (res) {
       console.log(`Database connection succeffully to ${dbName}`);

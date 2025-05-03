@@ -5,8 +5,10 @@ import {
   sharedPostFallbackUpdater,
   sharedPostUpdater,
 } from "../sharedUpdaters/posts";
+import { useAppContext } from "../appContext/context";
 
 export const useCreatePost = ({ onSuccess }: { onSuccess: () => void }) => {
+  const { auth } = useAppContext();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -37,7 +39,7 @@ export const useCreatePost = ({ onSuccess }: { onSuccess: () => void }) => {
         comments_count: 0,
         createdAt: new Date(),
         votes: 0,
-        author: { id: "", name: "" }, // TODO:
+        author: { id: auth.user?.id ?? "", name: auth.user?.name ?? "" },
         selfVoteValue: 0,
       };
 

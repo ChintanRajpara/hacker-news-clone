@@ -1,0 +1,38 @@
+version: "3"
+
+services:
+  react-app:
+    image: react-app
+    build: ./client/
+    stdin_open: true
+    ports:
+      - "5173:5173"
+    networks:
+      - hackernews-app
+
+  api-server:
+    image: api-server
+    build: ./api-server/
+    ports:
+      - "8080:8080"
+    networks:
+      - hackernews-app
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongodb/mongodb-community-server:latest
+    ports:
+      - "27017:27017"
+    networks:
+      - hackernews-app
+    volumes:
+      - mongo-data:/data/db
+
+networks:
+  hackernews-app:
+    driver: bridge
+
+volumes:
+  mongo-data:
+    driver: local
