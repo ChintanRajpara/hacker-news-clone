@@ -62,7 +62,7 @@
 
 ## 📁 Project Structure
 
-plaintext
+```plaintext
 /
 ├── api-server/
 │ ├── src/
@@ -79,6 +79,7 @@ plaintext
 ├── docker-compose.development.yml
 ├── docker-compose.production.yml
 └── README.md
+```
 
 ---
 
