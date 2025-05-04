@@ -62,9 +62,7 @@ const CommentReplyContainer = ({
               setHideComment((s) => !s);
             }}
           >
-            {hideComment
-              ? "show comment and replies"
-              : "hide comment and replies"}
+            {hideComment ? "show" : "hide"}
           </p>
         </div>
 
@@ -75,7 +73,11 @@ const CommentReplyContainer = ({
             {isAuthor ? (
               <EditableParagraph
                 {...{
-                  onChange: (text) => editCommentMutate({ text }),
+                  onChange: (text) => {
+                    if (text !== comment.text) {
+                      editCommentMutate({ text });
+                    }
+                  },
                   value: comment.text,
                   className: "text-md font-medium text-base-content",
                 }}
@@ -184,7 +186,7 @@ const PostCommentsContainer = ({ post }: { post: PostInfo }) => {
     <div className="flex items-center justify-center w-full">
       <LoadingBars />
     </div>
-  ) : comments?.length ? (
+  ) : (
     <div>
       <div className="flex flex-col gap-2 items-start">
         <textarea
@@ -212,17 +214,19 @@ const PostCommentsContainer = ({ post }: { post: PostInfo }) => {
           Comment
         </button>
       </div>
-      <div className="mt-5">
-        {comments.map((comment) => (
-          <CommentReplyContainer
-            {...{ comment, topLevelParentId: comment.id }}
-            key={comment.id}
-          />
-        ))}
-      </div>
+      {comments ? (
+        <div className="mt-5">
+          {comments.map((comment) => (
+            <CommentReplyContainer
+              {...{ comment, topLevelParentId: comment.id }}
+              key={comment.id}
+            />
+          ))}
+        </div>
+      ) : (
+        <></>
+      )}
     </div>
-  ) : (
-    <div>No comments</div>
   );
 };
 

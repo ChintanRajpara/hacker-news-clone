@@ -13,7 +13,7 @@ export const PostCreatedAtContainer = ({ post }: { post: PostInfo }) => {
   );
 
   return (
-    <div className="hover:underline underline-offset-2 text-xs">
+    <div className="underline underline-offset-2 text-xs">
       <p>
         <span className="font-bold text-sm">{`${
           isAuthor ? "You" : `${post.author.name}`

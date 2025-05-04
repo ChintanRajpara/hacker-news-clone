@@ -63,7 +63,7 @@ export const PostPointsContainer = ({ post }: { post: PostInfo }) => {
         </button>
       </div>
 
-      <div className="relative hover:underline underline-offset-2">
+      <div className="relative underline underline-offset-2">
         <p>{votes} points</p>
       </div>
     </div>

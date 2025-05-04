@@ -1,5 +1,10 @@
 import React, { useRef, useState, useEffect } from "react";
 
+const autoResizeTextArea = (el: HTMLTextAreaElement) => {
+  el.style.height = "auto";
+  el.style.height = el.scrollHeight + "px";
+};
+
 interface EditableParagraphProps {
   value: string;
   onChange: (value: string) => void;
@@ -20,18 +25,13 @@ export const EditableParagraph: React.FC<EditableParagraphProps> = ({
   useEffect(() => {
     if (editing && textareaRef.current) {
       textareaRef.current.focus();
-      autoResize(textareaRef.current);
+      autoResizeTextArea(textareaRef.current);
     }
   }, [editing]);
 
   useEffect(() => {
     setText(value);
   }, [value]);
-
-  const autoResize = (el: HTMLTextAreaElement) => {
-    el.style.height = "auto";
-    el.style.height = el.scrollHeight + "px";
-  };
 
   const handleBlur = () => {
     setEditing(false);
@@ -47,7 +47,7 @@ export const EditableParagraph: React.FC<EditableParagraphProps> = ({
       placeholder={placeholder}
       onChange={(e) => {
         setText(e.target.value);
-        if (textareaRef.current) autoResize(textareaRef.current);
+        if (textareaRef.current) autoResizeTextArea(textareaRef.current);
       }}
       onBlur={handleBlur}
       rows={1}

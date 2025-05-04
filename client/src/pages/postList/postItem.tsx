@@ -1,4 +1,11 @@
-import { Dispatch, Fragment, SetStateAction, useEffect, useMemo } from "react";
+import {
+  Dispatch,
+  Fragment,
+  SetStateAction,
+  useEffect,
+  useMemo,
+  useRef,
+} from "react";
 import { PostInfo } from "../../types/post";
 import { useAppContext } from "../../utils/appContext/context";
 import { useEditPost } from "../../utils/mutations/useEditPost";
@@ -7,6 +14,11 @@ import { Link } from "react-router-dom";
 import { FaCheck, FaEllipsisVertical, FaXmark } from "react-icons/fa6";
 import { PostPointsContainer } from "./postPointsContainer";
 import { PostCreatedAtContainer } from "./postCreatedAtContainer";
+
+const autoResizeTextArea = (el: HTMLTextAreaElement) => {
+  el.style.height = "auto";
+  el.style.height = el.scrollHeight + "px";
+};
 
 export const PostItem = ({
   post,
@@ -80,6 +92,9 @@ export const PostItem = ({
     setEditText("");
   };
 
+  const titleTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const textTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+
   return (
     <div
       className={`pt-3 py-1 px-1 rounded-xl flex flex-col ${
@@ -96,26 +111,48 @@ export const PostItem = ({
             }`}
           >
             {isEditing ? (
-              <input
-                autoFocus
-                className="input font-bold text-xl"
-                value={editTitle}
-                onChange={(e) => {
-                  setEditTitle(e.target.value);
-                }}
-              />
+              <>
+                <textarea
+                  autoFocus
+                  ref={(e) => {
+                    if (e) {
+                      titleTextareaRef.current = e;
+                      autoResizeTextArea(e);
+                    }
+                  }}
+                  className={`min-h-0 w-full border-0 outline-neutral rounded-lg outline resize-none input font-bold text-xl whitespace-pre-wrap overflow-x-hidden overflow-y-auto break-words`}
+                  value={editTitle}
+                  onChange={(e) => {
+                    setEditTitle(e.target.value);
+                    if (titleTextareaRef.current)
+                      autoResizeTextArea(titleTextareaRef.current);
+                  }}
+                  rows={1}
+                />
+              </>
             ) : (
               <p className="font-bold text-xl">{title}</p>
             )}
 
             {isEditing ? (
-              <input
-                className="input text-lg"
-                value={editText}
-                onChange={(e) => {
-                  setEditText(e.target.value);
-                }}
-              />
+              <>
+                <textarea
+                  ref={(e) => {
+                    if (e) {
+                      textTextareaRef.current = e;
+                      autoResizeTextArea(e);
+                    }
+                  }}
+                  className={`min-h-0 w-full border-0 outline-neutral rounded-lg outline resize-none input text-lg whitespace-pre-wrap overflow-x-hidden overflow-y-auto break-words`}
+                  value={editText}
+                  onChange={(e) => {
+                    setEditText(e.target.value);
+                    if (textTextareaRef.current)
+                      autoResizeTextArea(textTextareaRef.current);
+                  }}
+                  rows={1}
+                />
+              </>
             ) : (
               <p className="text-lg">{text}</p>
             )}
@@ -131,12 +168,14 @@ export const PostItem = ({
             }}
           >
             {isEditing ? (
-              <div className="flex gap-1">
+              <div className="flex flex-col gap-1">
                 <button
                   onClick={() => {
-                    const update = { text: editText, title: editTitle };
-                    editPostMutate(update);
-                    _handleCloseEdit();
+                    if (title !== editTitle || text !== editText) {
+                      const update = { title: editTitle, text: editText };
+                      editPostMutate(update);
+                      _handleCloseEdit();
+                    }
                   }}
                   className="btn btn-success text-success-content btn-circle btn-sm"
                 >
@@ -189,7 +228,7 @@ export const PostItem = ({
 
             <div>|</div>
 
-            <div className="hover:underline underline-offset-2">{`${comments_count} comments`}</div>
+            <div className="underline underline-offset-2">{`${comments_count} comments`}</div>
           </div>
 
           <PostCreatedAtContainer {...{ post }} />

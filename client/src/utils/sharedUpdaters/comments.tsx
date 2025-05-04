@@ -36,7 +36,18 @@ export const sharedCommentUpdater = async ({
         | InfiniteData<GetCommentsResponse, unknown>
         | undefined;
 
-      if (!oldData) return oldData;
+      if (!oldData) {
+        if (op === "A" && !parentId) {
+          return {
+            pageParams: [null],
+            pages: [
+              { comments: [commentUpdates as CommentInfo], pageInfo: {} },
+            ],
+          };
+        }
+
+        return oldData;
+      }
 
       // Handle top-level add directly
       if (op === "A" && !parentId) {
