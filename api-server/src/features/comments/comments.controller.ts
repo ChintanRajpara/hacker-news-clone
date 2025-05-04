@@ -24,7 +24,10 @@ class CommentsController {
   }
 
   async createComment(req: Request, res: Response) {
-    if (!req.user) throw new Error("Unauthorized");
+    if (!req.user) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
 
     const { postId, text, parentId } = req.body;
     const comment = await CommentsService.createComment(
@@ -78,7 +81,10 @@ class CommentsController {
   }
 
   async updateComment(req: Request, res: Response) {
-    if (!req.user) throw new Error("Unauthorized");
+    if (!req.user) {
+      res.status(401).json({ message: "Unauthorized access. Please log in." });
+      return;
+    }
 
     const { commentId } = req.params;
     const { text } = req.body;
@@ -89,7 +95,10 @@ class CommentsController {
   }
 
   async deleteComment(req: Request, res: Response) {
-    if (!req.user) throw new Error("Unauthorized");
+    if (!req.user) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
 
     const { commentId } = req.params;
 

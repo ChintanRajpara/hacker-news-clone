@@ -66,7 +66,10 @@ class PostController {
         message: "Post created successfully!",
       });
     } else {
-      throw new Error("unable to create post");
+      if (!req.user) {
+        res.status(401).json({ message: "unable to create post" });
+        return;
+      }
     }
   }
 
@@ -214,12 +217,16 @@ class PostController {
       .populate("author", "name")
       .lean<IPostWithAuthor>();
     if (!post) {
-      throw new Error("Post not found");
+      res.status(401).json({ message: "Post not found" });
+      return;
     }
 
     // Check if the user is the author of the post
     if (post.author._id.toString() !== req.user.id) {
-      throw new Error("You are not authorized to edit this post");
+      res
+        .status(401)
+        .json({ message: "You are not authorized to edit this post" });
+      return;
     }
 
     // Update the post fields
@@ -258,12 +265,18 @@ class PostController {
     const post = await Post.findById(id);
 
     if (!post) {
-      throw new Error("Post not found");
+      res.status(401).json({ message: "Post not found" });
+
+      return;
     }
 
     // Check if the user is the author of the post
     if (post.author.toString() !== req.user.id) {
-      throw new Error("You are not authorized to delete this post");
+      res
+        .status(401)
+        .json({ message: "You are not authorized to delete this post" });
+
+      return;
     }
 
     await Post.deleteOne({ _id: id }).exec();
@@ -288,7 +301,8 @@ class PostController {
       .populate("author", "name")
       .lean<IPostWithAuthor>();
     if (!post) {
-      throw new Error("Post not found");
+      res.status(401).json({ message: "Post not found" });
+      return;
     }
 
     // Check if the user has already voted

@@ -46,6 +46,10 @@ export const HeadingContainer = ({
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
+  useEffect(() => {
+    document.title = `Hacker News - ${postPageHeading[sort]}`;
+  }, [sort]);
+
   return (
     <div className="flex flex-col sm:flex-row gap-3 justify-between items-center">
       <div>

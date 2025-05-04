@@ -7,7 +7,7 @@ import { HeadingContainer } from "./headingContainer";
 import { useComments } from "../../utils/queries/useComments";
 import { CommentInfo } from "../../types/comment";
 import { formatDistanceToNow } from "date-fns";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAddComment } from "../../utils/mutations/useAddComment";
 import { EditableParagraph } from "../../components/editableParagraph";
 import { useAppContext } from "../../utils/appContext/context";
@@ -232,6 +232,10 @@ const PostCommentsContainer = ({ post }: { post: PostInfo }) => {
 
 const PostQueryContainer = ({ id }: { id: string }) => {
   const { post, isPending } = usePostDetail(id);
+
+  useEffect(() => {
+    document.title = post ? `Hacker News - ${post.title}` : "Hacker News";
+  }, [post]);
 
   return (
     <div>
