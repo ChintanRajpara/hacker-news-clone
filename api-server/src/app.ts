@@ -7,7 +7,9 @@ import { posts } from "./features/posts";
 import { requestLogger } from "./middleware/requestLogger";
 import { comments } from "./features/comments";
 import { tokenParserMiddleware } from "./middleware/auth.middleware";
+import dotenv from "dotenv";
 
+dotenv.config();
 const app = express();
 
 app.use(cors({ origin: process.env.ALLOWED_ORIGIN, credentials: true }));

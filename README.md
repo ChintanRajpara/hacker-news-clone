@@ -184,10 +184,11 @@ json
 
 **Response:**
 
-json
+```json
 {
-"message": "User created successfully."
+  "message": "User created successfully."
 }
+```
 
 - A secure Set-Cookie header is sent with the JWT token for session authentication.
 
@@ -205,10 +206,11 @@ json
 
 **Response:**
 
-json
+```json
 {
-"message": "Logged in successfully."
+  "message": "Logged in successfully."
 }
+```
 
 - A secure Set-Cookie header is sent with the JWT token for session authentication.
 
@@ -218,10 +220,11 @@ Logs out the user.
 
 **Response:**
 
-json
+```json
 {
-"message": "Logged out successfully."
+  "message": "Logged out successfully."
 }
+```
 
 Also clears the session cookie on the client via Set-Cookie with an expired token.
 
@@ -240,29 +243,30 @@ Fetches a paginated list of posts with optional search and sorting.
 
 #### ✅ Response
 
-json
+```json
 {
-"posts": [
-{
-"id": "abc123",
-"title": "Interesting Post",
-"url": "https://example.com",
-"text": null,
-"author": {
-"id": "user456",
-"name": "jane_doe"
-},
-"votes": 42,
-"selfVoteValue": 1,
-"comments_count": 8,
-"createdAt": "2025-05-04T12:34:56.789Z"
+  "posts": [
+    {
+      "id": "abc123",
+      "title": "Interesting Post",
+      "url": "https://example.com",
+      "text": null,
+      "author": {
+        "id": "user456",
+        "name": "jane_doe"
+      },
+      "votes": 42,
+      "selfVoteValue": 1,
+      "comments_count": 8,
+      "createdAt": "2025-05-04T12:34:56.789Z"
+    }
+    // ...more posts
+  ],
+  "pageInfo": {
+    "nextCursor": "abc123" // null if no more posts
+  }
 }
-// ...more posts
-],
-"pageInfo": {
-"nextCursor": "abc123" // null if no more posts
-}
-}
+```
 
 #### GET /posts/:id
 
@@ -276,23 +280,24 @@ Fetch detailed information about a single post by its ID.
 
 #### ✅ Response
 
-json
+```json
 {
-"post": {
-"id": "abc123",
-"title": "Interesting Post",
-"url": "https://example.com",
-"text": null,
-"author": {
-"id": "user456",
-"name": "jane_doe"
-},
-"votes": 42,
-"selfVoteValue": 1,
-"comments_count": 8,
-"createdAt": "2025-05-04T12:34:56.789Z"
+  "post": {
+    "id": "abc123",
+    "title": "Interesting Post",
+    "url": "https://example.com",
+    "text": null,
+    "author": {
+      "id": "user456",
+      "name": "jane_doe"
+    },
+    "votes": 42,
+    "selfVoteValue": 1,
+    "comments_count": 8,
+    "createdAt": "2025-05-04T12:34:56.789Z"
+  }
 }
-}
+```
 
 #### 🆕 POST /posts/
 
@@ -308,24 +313,25 @@ Create a new post (URL or text-based). Requires authentication via cookie.
 
 #### ✅ Response
 
-json
+```json
 {
-"post": {
-"id": "abc123",
-"title": "Interesting Post",
-"url": "https://example.com",
-"text": null,
-"author": {
-"id": "user456",
-"name": "jane_doe"
-},
-"votes": 42,
-"selfVoteValue": 1,
-"comments_count": 8,
-"createdAt": "2025-05-04T12:34:56.789Z"
-},
-"message": "Post created successfully!"
+  "post": {
+    "id": "abc123",
+    "title": "Interesting Post",
+    "url": "https://example.com",
+    "text": null,
+    "author": {
+      "id": "user456",
+      "name": "jane_doe"
+    },
+    "votes": 42,
+    "selfVoteValue": 1,
+    "comments_count": 8,
+    "createdAt": "2025-05-04T12:34:56.789Z"
+  },
+  "message": "Post created successfully!"
 }
+```
 
 #### ✏️ PUT /posts/:id
 
@@ -347,24 +353,25 @@ Edit an existing post. Requires authentication and ownership of the post.
 
 #### ✅ Response
 
-json
+```json
 {
-"post": {
-"id": "abc123",
-"title": "Interesting Post",
-"url": "https://example.com",
-"text": null,
-"author": {
-"id": "user456",
-"name": "jane_doe"
-},
-"votes": 42,
-"selfVoteValue": 1,
-"comments_count": 8,
-"createdAt": "2025-05-04T12:34:56.789Z"
-},
-"message": "Post updated successfully!"
+  "post": {
+    "id": "abc123",
+    "title": "Interesting Post",
+    "url": "https://example.com",
+    "text": null,
+    "author": {
+      "id": "user456",
+      "name": "jane_doe"
+    },
+    "votes": 42,
+    "selfVoteValue": 1,
+    "comments_count": 8,
+    "createdAt": "2025-05-04T12:34:56.789Z"
+  },
+  "message": "Post updated successfully!"
 }
+```
 
 #### ❌ DELETE /posts/:id
 
@@ -378,10 +385,11 @@ Delete a post by its ID. Requires authentication and ownership of the post.
 
 #### ✅ Response
 
-json
+```json
 {
-"message": "Post deleted successfully"
+  "message": "Post deleted successfully"
 }
+```
 
 Server validates ownership before deletion. Responds with a success message.
 
@@ -403,24 +411,25 @@ Vote on a post (upvote, downvote, or unvote). Requires authentication and ensure
 
 #### ✅ Response
 
-json
+```json
 {
-"post": {
-"id": "abc123",
-"title": "Interesting Post",
-"url": "https://example.com",
-"text": null,
-"author": {
-"id": "user456",
-"name": "jane_doe"
-},
-"votes": 42,
-"selfVoteValue": 1,
-"comments_count": 8,
-"createdAt": "2025-05-04T12:34:56.789Z"
-},
-"message": "Vote is already the same"
+  "post": {
+    "id": "abc123",
+    "title": "Interesting Post",
+    "url": "https://example.com",
+    "text": null,
+    "author": {
+      "id": "user456",
+      "name": "jane_doe"
+    },
+    "votes": 42,
+    "selfVoteValue": 1,
+    "comments_count": 8,
+    "createdAt": "2025-05-04T12:34:56.789Z"
+  },
+  "message": "Vote is already the same"
 }
+```
 
 #### 💬 POST /comments
 
@@ -436,22 +445,23 @@ Create a new comment on a post.
 
 #### ✅ Response
 
-json
+```json
 {
-"comment": {
-"author": {
-"id": "string",
-"name": "string"
-},
-"createdAt": "2023-01-01T00:00:00Z",
-"parentId": "string",
-"replies": [],
-"postId": "string",
-"text": "This is a new comment",
-"updatedAt": "2023-01-01T00:00:00Z",
-"id": "string"
+  "comment": {
+    "author": {
+      "id": "string",
+      "name": "string"
+    },
+    "createdAt": "2023-01-01T00:00:00Z",
+    "parentId": "string",
+    "replies": [],
+    "postId": "string",
+    "text": "This is a new comment",
+    "updatedAt": "2023-01-01T00:00:00Z",
+    "id": "string"
+  }
 }
-}
+```
 
 #### ✏️ PUT /comments/:commentId
 
@@ -471,10 +481,11 @@ Create a new comment on a post.
 
 #### ✅ Response
 
-json
+```json
 {
-"message": "Comment updated successfully"
+  "message": "Comment updated successfully"
 }
+```
 
 #### ❌ DELETE /comments/:commentId
 
@@ -488,10 +499,11 @@ Delete a specific comment by its ID.
 
 #### ✅ Response
 
-json
+```json
 {
-"message": "Comment deleted successfully"
+  "message": "Comment deleted successfully"
 }
+```
 
 ### 📄 GET /comments/:postId
 
@@ -512,24 +524,25 @@ Fetch the list of comments for a specific post, with pagination support.
 
 #### ✅ Response
 
-json
+```json
 {
-"comments": [
-{
-"author": {
-"id": "string",
-"name": "string"
-},
-"createdAt": "2023-01-01T00:00:00Z",
-"parentId": "string",
-"replies": [],
-"postId": "string",
-"text": "This is a comment",
-"updatedAt": "2023-01-01T00:00:00Z",
-"id": "string"
+  "comments": [
+    {
+      "author": {
+        "id": "string",
+        "name": "string"
+      },
+      "createdAt": "2023-01-01T00:00:00Z",
+      "parentId": "string",
+      "replies": [],
+      "postId": "string",
+      "text": "This is a comment",
+      "updatedAt": "2023-01-01T00:00:00Z",
+      "id": "string"
+    }
+  ],
+  "pageInfo": {
+    "nextCursor": "next_cursor_value"
+  }
 }
-],
-"pageInfo": {
-"nextCursor": "next_cursor_value"
-}
-}
+```

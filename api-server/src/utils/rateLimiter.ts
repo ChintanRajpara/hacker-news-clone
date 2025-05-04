@@ -1,4 +1,7 @@
 import rateLimit from "express-rate-limit";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export const writeLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute

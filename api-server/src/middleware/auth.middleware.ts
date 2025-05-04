@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { IUser } from "../features/users/users.model";
+import dotenv from "dotenv";
 
-const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_key";
+dotenv.config();
 
 export const tokenParserMiddleware = (
   req: Request,
@@ -13,7 +14,10 @@ export const tokenParserMiddleware = (
 
   if (token) {
     try {
-      const decoded = jwt.verify(token, JWT_SECRET) as IUser;
+      const decoded = jwt.verify(
+        token,
+        process.env.JWT_SECRET ?? "your_jwt_secret_key"
+      ) as IUser;
       req.user = decoded;
     } catch {
       // Ignore invalid tokens silently

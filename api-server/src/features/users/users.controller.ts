@@ -2,7 +2,9 @@ import { Request, Response } from "express";
 import usersModel, { IUser } from "./users.model";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
 
+dotenv.config();
 class UsersController {
   private static instance: UsersController;
 
