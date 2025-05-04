@@ -141,15 +141,21 @@ docker compose -f docker-compose.production.yml up --build -d
 
 ## 🤖 AI Tools Used
 
-To accelerate development while focusing on core logic and UX, I used AI tools as efficient coding assistants.
+AI tools were intentionally integrated throughout the development process—not as a crutch, but as powerful accelerators to increase velocity, enforce consistency, and reduce cognitive overhead on boilerplate and repetitive patterns.
 
-They were primarily used to:
+### 🧠 How I Leveraged AI Intelligently
 
-- Automate redundant patterns (e.g., form logic, CRUD handlers, API scaffolds).
-- Speed up utility function generation after clearly outlining logic.
-- Maintain consistency and eliminate repetitive boilerplate without compromising clarity.
+- Code Generation with Oversight: Used AI to scaffold boilerplate-heavy patterns (CRUD handlers, form logic, API contracts), then refined and reviewed them manually to ensure clarity, security, and maintainability.
 
-All architectural and design decisions were made beforehand; AI was used to **implement** my ideas more efficiently — enhancing velocity, not replacing thought.
+- Unit Test Generation: Accelerated test creation for key backend modules (auth, posts, comments) by prompting AI with expected behaviors, then customizing assertions and mock logic based on real-world edge cases.
+
+- Refactoring & Naming: Utilized AI to suggest alternative abstractions, optimize function naming, and catch inconsistencies in naming conventions across modules.
+
+- Error Message Crafting: Used AI for generating helpful and user-friendly error messages—particularly for form validation and API responses.
+
+> 💡 AI did not dictate architecture or design—those decisions were mine. I used AI as a senior assistant, not a replacement for thoughtful engineering.
+
+By balancing autonomous decision-making with AI-enhanced workflows, I stayed focused on the parts of the project that matter most: user experience, clean architecture, and developer empathy.
 
 ## 🧱 Future Enhancements
 
