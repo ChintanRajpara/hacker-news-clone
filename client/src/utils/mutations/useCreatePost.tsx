@@ -61,6 +61,8 @@ export const useCreatePost = ({ onSuccess }: { onSuccess: () => void }) => {
       }
     },
     onSuccess: async ({ post }, _, { clientMutationId }) => {
+      onSuccess();
+
       if (clientMutationId) {
         return sharedPostUpdater({
           queryClient,
@@ -70,8 +72,6 @@ export const useCreatePost = ({ onSuccess }: { onSuccess: () => void }) => {
           clientMutationId,
         });
       }
-
-      onSuccess();
     },
   });
 };
