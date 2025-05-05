@@ -168,6 +168,8 @@ While the core functionality has been implemented, there are several improvement
 - **Accessibility Improvements** – Better keyboard navigation and ARIA support.
 - **XSS & Input Validation** – Harden input handling with stricter validation and sanitization.
 - **Comprehensive Testing** – Expand test coverage across frontend and backend.
+- **Frontend Unit Testing** – Normally, I use testing frameworks like Vitest for frontend unit tests, but due to time constraints, they were not included in this version.
+- **Live Hacker News Integration** – The current data is a static dump from Hacker News. Real-time syncing and updates were not implemented due to time limitations.
 
 These additions are part of the project roadmap and will be tackled in future updates.
 

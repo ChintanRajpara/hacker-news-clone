@@ -14,6 +14,7 @@ import { Link } from "react-router-dom";
 import { FaCheck, FaEllipsisVertical, FaXmark } from "react-icons/fa6";
 import { PostPointsContainer } from "./postPointsContainer";
 import { PostCreatedAtContainer } from "./postCreatedAtContainer";
+import he from "he";
 
 const autoResizeTextArea = (el: HTMLTextAreaElement) => {
   el.style.height = "auto";
@@ -95,6 +96,8 @@ export const PostItem = ({
   const titleTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const textTextareaRef = useRef<HTMLTextAreaElement | null>(null);
 
+  const decodedHtml = useMemo(() => he.decode(text ?? ""), [text]);
+
   return (
     <div
       className={`pt-3 py-1 px-1 rounded-xl flex flex-col ${
@@ -154,7 +157,10 @@ export const PostItem = ({
                 />
               </>
             ) : (
-              <p className="text-lg">{text}</p>
+              <div
+                className={`text-lg flex flex-col`}
+                dangerouslySetInnerHTML={{ __html: decodedHtml }}
+              ></div>
             )}
           </div>
         </WrapperComponent>

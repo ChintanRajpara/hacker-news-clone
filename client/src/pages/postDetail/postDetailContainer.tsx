@@ -13,6 +13,7 @@ import { EditableParagraph } from "../../components/editableParagraph";
 import { useAppContext } from "../../utils/appContext/context";
 import { useEditComment } from "../../utils/mutations/useEditComment";
 import { useAuthenticatedClick } from "../../utils/hooks/useAuthenticatedClick";
+import he from "he";
 
 const CommentReplyContainer = ({
   comment,
@@ -42,6 +43,8 @@ const CommentReplyContainer = ({
   );
 
   const { authenticatedClick } = useAuthenticatedClick();
+
+  const decodedHtml = useMemo(() => he.decode(comment.text), [comment.text]);
 
   return (
     <div className="flex flex-col gap-2.5">
@@ -73,6 +76,7 @@ const CommentReplyContainer = ({
             {isAuthor ? (
               <EditableParagraph
                 {...{
+                  decodedHtml,
                   onChange: (text) => {
                     if (text !== comment.text) {
                       editCommentMutate({ text });
@@ -83,9 +87,10 @@ const CommentReplyContainer = ({
                 }}
               />
             ) : (
-              <p className="text-md font-medium text-base-content">
-                {comment.text}
-              </p>
+              <div
+                className="text-md font-medium text-base-content"
+                dangerouslySetInnerHTML={{ __html: decodedHtml }}
+              ></div>
             )}
 
             <div>

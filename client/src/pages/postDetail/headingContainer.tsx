@@ -13,6 +13,7 @@ import { PostCreatedAtContainer } from "../postList/postCreatedAtContainer";
 import { useAppContext } from "../../utils/appContext/context";
 import { FaExternalLinkAlt } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import he from "he";
 
 const autoResizeTextArea = (el: HTMLTextAreaElement) => {
   el.style.height = "auto";
@@ -78,6 +79,8 @@ export const HeadingContainer = ({ post }: { post: PostInfo }) => {
 
   const titleTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const textTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const decodedHtml = useMemo(() => he.decode(post.text ?? ""), [post.text]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -158,18 +161,17 @@ export const HeadingContainer = ({ post }: { post: PostInfo }) => {
             rows={1}
           />
         ) : (
-          <p
+          <div
             onClick={() => {
               if (isAuthor) {
                 setIsEditingText(true);
               }
             }}
-            className={`font-medium text-xl ${
+            className={`font-medium text-xl flex flex-col ${
               isAuthor ? "cursor-pointer" : ""
             } py-1.5 `}
-          >
-            {post.text}
-          </p>
+            dangerouslySetInnerHTML={{ __html: decodedHtml }}
+          ></div>
         )}
       </div>
 

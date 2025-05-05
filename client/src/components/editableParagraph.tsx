@@ -10,6 +10,7 @@ interface EditableParagraphProps {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  decodedHtml: string;
 }
 
 export const EditableParagraph: React.FC<EditableParagraphProps> = ({
@@ -17,6 +18,7 @@ export const EditableParagraph: React.FC<EditableParagraphProps> = ({
   onChange,
   placeholder = "Click to edit...",
   className = "",
+  decodedHtml,
 }) => {
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(value);
@@ -53,11 +55,10 @@ export const EditableParagraph: React.FC<EditableParagraphProps> = ({
       rows={1}
     />
   ) : (
-    <p
+    <div
       className={`cursor-pointer whitespace-pre-wrap break-words ${className}`}
       onClick={() => setEditing(true)}
-    >
-      {value || <span className="text-neutral-400">{placeholder}</span>}
-    </p>
+      dangerouslySetInnerHTML={{ __html: decodedHtml }}
+    ></div>
   );
 };
